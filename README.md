@@ -1,11 +1,6 @@
-# Duolingo Hacks
-<img src="/images/waving.gif" alt="Duo waving" width="200px">
+# Duolingo thingy
 
-[View cole_bauml other projects](https://github.com/cole-bauml)
-
-Advanced and not maintained Duolingo hacks.
-
-The best Duolingo hack in Github
+I just forked this since I dont want to lose my streak anymore (i lost my 734 day streak and ive never recovered from that traumatic experience) whenever im on vacation.
 
 ### Preperation (required)
 1. Duolingo Auth Token
@@ -36,4 +31,4 @@ The best Duolingo hack in Github
     - Repeat for both token and user ID.
 
 
-I just made this bc i have no time nowadays to do my duolingo
+i have no time nowadays to do my duolingo, but i still do it once in a while
