@@ -6,6 +6,7 @@ const assert = require('assert');
 const {
     cleanString,
     cleanToken,
+    inspectToken,
     getUserIdFromToken,
     getCredentials,
     getHeaders,
@@ -35,8 +36,9 @@ assert.strictEqual(cleanToken('ey66666'), 'ey66666');
 console.log('   ✅ cleanToken passed\n');
 
 // 3. Test getUserIdFromToken (JWT decoding)
-console.log('Test 3: getUserIdFromToken');
-const testPayload = { sub: 84920194, username: 'duolover' };
+console.log('Test 3: getUserIdFromToken & inspectToken');
+const futureExp = Math.floor(Date.now() / 1000) + 86400 * 30; // 30 days in future
+const testPayload = { sub: 84920194, username: 'duolover', exp: futureExp };
 const headerBase64 = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
 const payloadBase64 = Buffer.from(JSON.stringify(testPayload)).toString('base64url');
 const mockJwt = `${headerBase64}.${payloadBase64}.mocksignature`;
@@ -44,10 +46,24 @@ const mockJwt = `${headerBase64}.${payloadBase64}.mocksignature`;
 const extractedUserId = getUserIdFromToken(mockJwt);
 assert.strictEqual(extractedUserId, '84920194');
 
+const tokenInfo = inspectToken(mockJwt);
+assert.strictEqual(tokenInfo.valid, true);
+assert.strictEqual(tokenInfo.sub, '84920194');
+assert.strictEqual(tokenInfo.isExpired, false);
+
+// Test expired token detection
+const pastExp = Math.floor(Date.now() / 1000) - 86400 * 10; // 10 days ago
+const expiredPayload = { sub: 84920194, exp: pastExp };
+const expiredJwt = `${headerBase64}.${Buffer.from(JSON.stringify(expiredPayload)).toString('base64url')}.mocksig`;
+const expiredInfo = inspectToken(expiredJwt);
+assert.strictEqual(expiredInfo.valid, true);
+assert.strictEqual(expiredInfo.isExpired, true);
+
 // Invalid JWT handling
 assert.strictEqual(getUserIdFromToken('invalid.token'), null);
 assert.strictEqual(getUserIdFromToken(''), null);
-console.log('   ✅ getUserIdFromToken passed\n');
+assert.strictEqual(inspectToken('').valid, false);
+console.log('   ✅ getUserIdFromToken & inspectToken passed\n');
 
 // 4. Test getCredentials
 console.log('Test 4: getCredentials auto-resolution');
@@ -68,13 +84,14 @@ assert.strictEqual(creds.userId, '84920194'); // Should override UUID with real 
 // Scenario C: User provided real numeric ID
 process.env.USER_ID = '12345678';
 creds = getCredentials();
-assert.strictEqual(creds.userId, '12345678');
+assert.strictEqual(creds.userId, '84920194'); // Sub from token is authoritative!
 console.log('   ✅ getCredentials passed\n');
 
 // 5. Test getHeaders
 console.log('Test 5: getHeaders');
 const headers = getHeaders(mockJwt);
 assert.strictEqual(headers['authorization'], `Bearer ${mockJwt}`);
+assert.strictEqual(headers['cookie'], `jwt_token=${mockJwt}`);
 assert.strictEqual(headers['accept'], 'application/json');
 assert.strictEqual(headers['referer'], 'https://www.duolingo.com/practice');
 console.log('   ✅ getHeaders passed\n');

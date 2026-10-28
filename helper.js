@@ -56,25 +56,48 @@ function decodeBase64Url(str) {
 }
 
 /**
+ * Inspects a Duolingo JWT token and checks format, sub, and expiration
+ */
+function inspectToken(token) {
+    if (!token) {
+        return { valid: false, error: 'No token provided' };
+    }
+    const cleaned = cleanToken(token);
+    const parts = cleaned.split('.');
+    if (parts.length < 2) {
+        return { valid: false, error: 'Token is not a valid JWT format (expected 3 dot-separated segments)' };
+    }
+    const payloadJson = decodeBase64Url(parts[1]);
+    if (!payloadJson) {
+        return { valid: false, error: 'Unable to decode JWT payload' };
+    }
+    try {
+        const payload = JSON.parse(payloadJson);
+        const nowSec = Math.floor(Date.now() / 1000);
+        const exp = payload.exp ? Number(payload.exp) : null;
+        const isExpired = exp ? exp < nowSec : false;
+        const expiredDate = exp ? new Date(exp * 1000) : null;
+
+        return {
+            valid: true,
+            sub: payload.sub ? String(payload.sub) : null,
+            username: payload.username || null,
+            exp,
+            isExpired,
+            expiredDate,
+            payload
+        };
+    } catch (e) {
+        return { valid: false, error: `Invalid JSON in JWT payload: ${e.message}` };
+    }
+}
+
+/**
  * Extracts the user ID (sub claim) from a Duolingo JWT token payload
  */
 function getUserIdFromToken(token) {
-    try {
-        const cleaned = cleanToken(token);
-        const parts = cleaned.split('.');
-        if (parts.length >= 2) {
-            const payloadJson = decodeBase64Url(parts[1]);
-            if (payloadJson) {
-                const payload = JSON.parse(payloadJson);
-                if (payload && payload.sub) {
-                    return String(payload.sub);
-                }
-            }
-        }
-    } catch {
-        // Return null if token cannot be decoded
-    }
-    return null;
+    const info = inspectToken(token);
+    return info.valid && info.sub ? info.sub : null;
 }
 
 /**
@@ -87,18 +110,10 @@ function getCredentials() {
     let rawUserId = process.env.USER_ID || process.env.userId || process.env.DUOLINGO_USER_ID || process.env.logged_out_uuid || '';
     rawUserId = cleanString(rawUserId);
 
-    // If userId looks like a UUID (e.g. from logged_out_uuid) or is empty, try extracting sub from JWT
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawUserId);
     const subFromToken = getUserIdFromToken(token);
-
-    let userId = rawUserId;
-    if (!userId || isUuid) {
-        if (subFromToken) {
-            userId = subFromToken;
-        }
-    } else if (!/^\d+$/.test(userId) && subFromToken) {
-        userId = subFromToken;
-    }
+    // The JWT token's 'sub' claim is ALWAYS the authoritative account ID.
+    // If present in the token, we use it directly to prevent any credentials mismatch.
+    const userId = subFromToken || rawUserId;
 
     return { token, userId };
 }
@@ -112,6 +127,7 @@ function getHeaders(token) {
         "accept": "application/json",
         "accept-language": "en-US,en;q=0.9",
         "authorization": `Bearer ${cleaned}`,
+        "cookie": `jwt_token=${cleaned}`,
         "content-type": "application/json",
         "origin": "https://www.duolingo.com",
         "referer": "https://www.duolingo.com/practice",
@@ -129,14 +145,45 @@ async function getUserLanguages(customToken, customUserId) {
         : getCredentials();
 
     if (!token) {
-        throw new Error('Duolingo auth token is required. Please set the TOKEN environment variable / repository secret.');
+        throw new Error(
+            'Duolingo auth token is required. Please set the TOKEN repository secret in GitHub Settings > Secrets and variables > Actions.'
+        );
     }
+
+    const tokenInfo = inspectToken(token);
+    if (!tokenInfo.valid) {
+        throw new Error(
+            `Invalid Duolingo auth token format: ${tokenInfo.error}.\n` +
+            `Please ensure you copied the entire jwt_token cookie value without quotes.`
+        );
+    }
+
+    if (tokenInfo.isExpired) {
+        const expiredStr = tokenInfo.expiredDate ? tokenInfo.expiredDate.toUTCString() : 'in the past';
+        throw new Error(
+            `\n============================================================\n` +
+            `❌ YOUR DUOLINGO AUTH TOKEN HAS EXPIRED!\n` +
+            `📅 Token expiration date: ${expiredStr}\n\n` +
+            `Duolingo JWT tokens expire every few months and cannot be used once expired.\n` +
+            `Duolingo rejects expired tokens with HTTP 401 Unauthorized.\n\n` +
+            `👉 TO FIX THIS (takes 30 seconds):\n` +
+            `1. Open https://www.duolingo.com in your web browser and ensure you are logged in.\n` +
+            `2. Press F12 (or Cmd+Option+J on Mac) to open Developer Tools -> Console.\n` +
+            `3. Run this command:\n` +
+            `   document.cookie.split('; ').find(row => row.startsWith('jwt_token='))?.split('=')[1];\n` +
+            `4. Copy the output string.\n` +
+            `5. In your GitHub repo: Settings > Secrets and variables > Actions > edit 'TOKEN' and paste the fresh token.\n` +
+            `============================================================`
+        );
+    }
+
     if (!userId) {
-        throw new Error('Duolingo User ID could not be determined. Please verify your token or set the USER_ID secret.');
+        throw new Error('Duolingo User ID could not be determined from your token. Please verify your token.');
     }
 
     const headers = getHeaders(token);
-    const url = `https://www.duolingo.com/2017-06-30/users/${userId}?fields=fromLanguage,learningLanguage,streak,streakData,currentCourse,username,name`;
+    // Request standard scalar fields
+    const url = `https://www.duolingo.com/2017-06-30/users/${userId}?fields=fromLanguage,learningLanguage,streak,currentCourse,username,name`;
 
     const res = await fetch(url, {
         headers,
@@ -145,6 +192,18 @@ async function getUserLanguages(customToken, customUserId) {
 
     if (!res.ok) {
         const text = await res.text();
+        if (res.status === 401) {
+            throw new Error(
+                `Duolingo Authentication Failed (HTTP 401 Unauthorized).\n` +
+                `Duolingo rejected your TOKEN as invalid, expired, or revoked.\n\n` +
+                `👉 TO FIX THIS (takes 30 seconds):\n` +
+                `1. Open https://www.duolingo.com in your browser and log in.\n` +
+                `2. Press F12 (or Cmd+Option+J on Mac) -> Console, and run:\n` +
+                `   document.cookie.split('; ').find(row => row.startsWith('jwt_token='))?.split('=')[1];\n` +
+                `3. Copy the token string (without quotes).\n` +
+                `4. Go to GitHub repo Settings > Secrets and variables > Actions > update 'TOKEN'.`
+            );
+        }
         throw new Error(`Failed to fetch user data (HTTP ${res.status}): ${text}`);
     }
 
@@ -161,11 +220,28 @@ async function getUserLanguages(customToken, customUserId) {
         ? data.streak 
         : (data.streakData?.currentStreak?.length ?? 0);
 
+    // Fetch streakData separately with subfields so it never blocks profile loading
+    let streakData = data.streakData || null;
+    if (!streakData) {
+        try {
+            const sdRes = await fetch(`https://www.duolingo.com/2017-06-30/users/${userId}?fields=streakData{currentStreak,previousStreak}`, {
+                headers,
+                method: "GET"
+            });
+            if (sdRes.ok) {
+                const sdJson = await sdRes.json();
+                streakData = sdJson.streakData || null;
+            }
+        } catch {
+            // Optional metadata
+        }
+    }
+
     return {
         fromLanguage,
         learningLanguage,
         streak,
-        streakData: data.streakData || null,
+        streakData,
         username: data.username || data.name || userId,
         userId
     };
@@ -283,6 +359,8 @@ module.exports = {
     fetch,
     cleanString,
     cleanToken,
+    decodeBase64Url,
+    inspectToken,
     getUserIdFromToken,
     getCredentials,
     getHeaders,

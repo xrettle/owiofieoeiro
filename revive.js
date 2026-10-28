@@ -19,16 +19,19 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
  * Parses YYYY-MM-DD into a UTC Date object at noon (12:00:00 UTC)
  */
 function parseDateUtc(dateStr) {
-    if (!dateStr) return null;
-    const parts = dateStr.split('-');
+    if (!dateStr || typeof dateStr !== 'string' || !dateStr.trim()) return null;
+    const trimmed = dateStr.trim();
+    const parts = trimmed.split('-');
     if (parts.length === 3) {
         const year = parseInt(parts[0], 10);
         const month = parseInt(parts[1], 10) - 1;
         const day = parseInt(parts[2], 10);
-        const d = new Date(Date.UTC(year, month, day, 12, 0, 0, 0));
-        if (!isNaN(d.getTime())) return d;
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+            const d = new Date(Date.UTC(year, month, day, 12, 0, 0, 0));
+            if (!isNaN(d.getTime())) return d;
+        }
     }
-    const d = new Date(dateStr);
+    const d = new Date(trimmed);
     if (!isNaN(d.getTime())) {
         d.setUTCHours(12, 0, 0, 0);
         return d;
@@ -93,14 +96,14 @@ const main = async () => {
         let startDate = null;
         let endDate = parseDateUtc(process.env.END_DATE) || nowUtc;
 
-        if (process.env.START_DATE) {
+        if (process.env.START_DATE && process.env.START_DATE.trim()) {
             startDate = parseDateUtc(process.env.START_DATE);
             if (!startDate) {
                 console.error(`❌ Invalid START_DATE format: "${process.env.START_DATE}". Expected YYYY-MM-DD.`);
                 process.exit(1);
             }
-        } else if (process.env.DAYS_BACK) {
-            const daysBack = parseInt(process.env.DAYS_BACK, 10);
+        } else if (process.env.DAYS_BACK && process.env.DAYS_BACK.trim()) {
+            const daysBack = parseInt(process.env.DAYS_BACK.trim(), 10);
             if (daysBack > 0) {
                 startDate = new Date(endDate.getTime());
                 startDate.setUTCDate(startDate.getUTCDate() - daysBack);
