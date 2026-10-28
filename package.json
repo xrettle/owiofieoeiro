@@ -1,11 +1,15 @@
 {
   "name": "duolingohack",
-  "version": "1.0.0",
-  "description": "A hack for Duolingo to spoof lessons for XP.",
-  "main": "grinder.js",
+  "version": "2.0.0",
+  "description": "Keep your Duolingo streak alive, backfill missed days, and earn XP automatically.",
+  "main": "xp.js",
   "scripts": {
+    "start": "node xp.js",
     "xp": "node xp.js",
-    "unlimitedhearts": "node unlimitedhearts.js"
+    "streak": "node xp.js",
+    "revive": "node revive.js",
+    "unlimitedhearts": "node unlimitedhearts.js",
+    "test": "node test.js"
   },
   "repository": {
     "type": "git",

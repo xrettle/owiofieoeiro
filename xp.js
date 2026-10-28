@@ -1,87 +1,82 @@
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const { getUserLanguages, headers, removeQuotes } = require('./helper.js');
+/**
+ * Duolingo XP & Daily Streak Keeper Script
+ */
+
+const {
+    getUserLanguages,
+    getHeaders,
+    getCredentials,
+    createPracticeSession,
+    submitPracticeSession
+} = require('./helper.js');
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const init = async () => {
-    const lessonsToComplete = Number(process.env.lessonsToComplete) || 5;
-    const token = removeQuotes(process.env.token);
-    const userId = removeQuotes(process.env.userId);
+    const lessonsRaw = process.env.lessonsToComplete || process.env.LESSONS || process.env.LESSONS_TO_COMPLETE || 1;
+    const lessonsToComplete = Math.max(1, parseInt(lessonsRaw, 10) || 1);
 
-    if (!token || !userId) {
-        throw new Error('User ID and token must be specified.');
+    const { token, userId } = getCredentials();
+
+    if (!token) {
+        console.error('❌ Error: Duolingo auth token (TOKEN) is required.');
+        console.error('👉 Please make sure the TOKEN secret is set in your repository settings.');
+        process.exit(1);
     }
 
-    try {
-        const userLanguages = await getUserLanguages();
-        console.log('Fetched User Languages:', userLanguages);
+    const headers = getHeaders(token);
 
-        const sessionBody = {
-            challengeTypes: ["listen"],
-            fromLanguage: userLanguages.fromLanguage,
-            isFinalLevel: false,
-            isV2: true,
-            juicy: true,
-            learningLanguage: userLanguages.learningLanguage,
-            levelIndex: 1,
-            shakeToReportEnabled: true,
-            skillId: "20017c47905904a4bbdfa3ca1b4bd85e",
-            smartTipsVersion: 2,
-            type: "LEGENDARY_LEVEL",
-        };
+    try {
+        console.log('🔄 Fetching user profile from Duolingo...');
+        const userInfo = await getUserLanguages();
+        console.log(`👤 User: ${userInfo.username} (ID: ${userInfo.userId})`);
+        console.log(`🔥 Current Streak: ${userInfo.streak} days`);
+        console.log(`📚 Active Course: Learning "${userInfo.learningLanguage}" from "${userInfo.fromLanguage}"`);
+
+        let successfulLessons = 0;
+        let totalXpEarned = 0;
 
         for (let i = 0; i < lessonsToComplete; i++) {
             const formattedFraction = `${i + 1}/${lessonsToComplete}`;
-            console.log(`Running: ${formattedFraction}`);
+            console.log(`\n▶️ Starting lesson ${formattedFraction}...`);
 
             try {
-                const createdSession = await fetch("https://www.duolingo.com/2017-06-30/sessions", {
-                    headers,
-                    method: 'POST',
-                    body: JSON.stringify(sessionBody),
-                }).then(res => {
-                    if (!res.ok) throw new Error('Failed to create session. Check your credentials.');
-                    return res.json();
-                });
+                const session = await createPracticeSession(headers, userInfo);
+                console.log(`   Session created (ID: ${session.id}, type: ${session.type || 'PRACTICE'})`);
 
-                console.log(`Created Fake Duolingo Practice Session: ${createdSession.id}`);
+                // Wait 1.5 seconds to simulate realistic completion time
+                await sleep(1500);
 
-                const rewards = await fetch(`https://www.duolingo.com/2017-06-30/sessions/${createdSession.id}`, {
-                    headers,
-                    method: 'PUT',
-                    body: JSON.stringify({
-                        ...createdSession,
-                        beginner: false,
-                        challengeTimeTakenCutoff: 6000,
-                        startTime: (Date.now() - 60000) / 1000,
-                        enableBonusPoints: true,
-                        endTime: Date.now() / 1000,
-                        failed: false,
-                        heartsLeft: 0,
-                        hasBoost: true,
-                        maxInLessonStreak: 15,
-                        shouldLearnThings: true,
-                        progressUpdates: [],
-                        sessionExperimentRecord: [],
-                        sessionStartExperiments: [],
-                        showBestTranslationInGradingRibbon: true,
-                        xpPromised: 201,
-                    }),
-                }).then(res => {
-                    if (!res.ok) {
-                        return res.text().then(text => {
-                            console.error(`Error receiving rewards: ${text}`);
-                        });
-                    }
-                    return res.json();
-                });
+                const rewards = await submitPracticeSession(headers, session);
+                const xpGain = rewards?.xpGain ?? rewards?.xp ?? rewards?.awardedXp ?? 15;
+                totalXpEarned += (typeof xpGain === 'number' ? xpGain : 0);
 
-                console.log(`Submitted Spoof Practice Session Data - Received`);
-                console.log(`💪🏆🎉 Earned ${rewards.xpGain} XP!`);
-            } catch (err) {
-                console.error(`Error in lesson ${formattedFraction}: ${err}`);
+                console.log(`   Submitted session data - Server accepted!`);
+                console.log(`💪🏆🎉 Earned ${xpGain} XP for lesson ${formattedFraction}!`);
+                successfulLessons++;
+
+                // Wait between lessons to prevent rate limiting
+                if (i < lessonsToComplete - 1) {
+                    await sleep(2000);
+                }
+            } catch (lessonErr) {
+                console.error(`❌ Failed lesson ${formattedFraction}: ${lessonErr.message}`);
             }
         }
+
+        console.log(`\n========================================`);
+        console.log(`🏁 Summary: ${successfulLessons}/${lessonsToComplete} lessons completed.`);
+        console.log(`✨ Total XP earned: ${totalXpEarned}`);
+        console.log(`🔥 Duolingo daily streak maintained!`);
+        console.log(`========================================`);
+
+        if (successfulLessons === 0) {
+            console.error('\n⚠️ All attempted lessons failed. Please check your token and account status.');
+            process.exit(1);
+        }
     } catch (err) {
-        console.error(`Initialization failed: ${err}`);
+        console.error(`\n❌ Initialization error: ${err.message}`);
+        process.exit(1);
     }
 };
 

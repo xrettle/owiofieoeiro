@@ -1,31 +1,35 @@
-name: '2'
-run-name: numero 2
+name: 'Duolingo XP Farm'
+run-name: 'Earn Duolingo XP (${{ github.event.inputs.lessonsToComplete || 5 }} lessons)'
 
 on:
   workflow_dispatch:
     inputs:
       lessonsToComplete:
-        description: 'Amount of fake lessons to complete. (Each give 200 XP)'
+        description: 'Amount of practice lessons to complete'
         required: true
-        default: 1
+        default: '5'
 
 jobs:
-  check-bats-version:
+  farm-xp:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
-
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-        
-      - run: npm install node-fetch
 
-      - run: npm run xp
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run XP Script
+        run: node xp.js
         env:
           lessonsToComplete: ${{ github.event.inputs.lessonsToComplete }}
+          TOKEN: ${{ secrets.TOKEN }}
+          USER_ID: ${{ secrets.USER_ID }}
           token: ${{ secrets.TOKEN }}
           userId: ${{ secrets.USER_ID }}

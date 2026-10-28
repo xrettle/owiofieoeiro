@@ -1,34 +1,38 @@
-name: 'Run lessons every 45 mins'
-run-name: Your hack is running! Click me to see it's progress.
+name: 'Duolingo Periodic Practice'
+run-name: 'Periodic Practice (${{ github.event.inputs.lessonsToComplete || 1 }} lesson)'
 
 on:
   workflow_dispatch:
     inputs:
       lessonsToComplete:
-        description: 'Amount of fake lessons to complete each time. (Each give 200 XP)'
+        description: 'Amount of practice lessons to complete each time'
         required: true
-        default: 1
+        default: '1'
 
   schedule:
-    - cron: '*/650 * * * *'
+    - cron: '*/45 * * * *'
 
 jobs:
-  check-bats-version:
+  periodic-practice:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
-
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-        
-      - run: npm install node-fetch
 
-      - run: npm run xp
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run XP Script
+        run: node xp.js
         env:
-          lessonsToComplete: ${{ github.event.inputs.lessonsToComplete }}
+          lessonsToComplete: ${{ github.event.inputs.lessonsToComplete || 1 }}
+          TOKEN: ${{ secrets.TOKEN }}
+          USER_ID: ${{ secrets.USER_ID }}
           token: ${{ secrets.TOKEN }}
           userId: ${{ secrets.USER_ID }}

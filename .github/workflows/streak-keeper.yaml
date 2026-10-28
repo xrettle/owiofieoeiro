@@ -1,9 +1,9 @@
-name: '1'
-run-name: 'workers'
+name: 'Duolingo Streak Keeper'
+run-name: 'Keep Duolingo Streak'
 
 on:
   schedule:
-    - cron: '18 23 * * *' 
+    - cron: '18 23 * * *'
   workflow_dispatch:
 
 jobs:
@@ -11,17 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-        
-      - run: npm install node-fetch
-        
 
-      - run: node xp.js
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Streak Keeper
+        run: node xp.js
         env:
-          lessonsToComplete: 1 
+          lessonsToComplete: 1
+          TOKEN: ${{ secrets.TOKEN }}
+          USER_ID: ${{ secrets.USER_ID }}
           token: ${{ secrets.TOKEN }}
           userId: ${{ secrets.USER_ID }}
