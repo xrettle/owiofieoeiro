@@ -1,19 +1,19 @@
 name: 'Duolingo Streak Reviver (Backfill)'
-run-name: 'Revive Streak (${{ github.event.inputs.startDate || github.event.inputs.daysBack || "auto-detect" }})'
+run-name: 'Revive Duolingo Streak'
 
 on:
   workflow_dispatch:
     inputs:
       startDate:
-        description: 'Start date to begin backfilling from (format: YYYY-MM-DD). Leave blank to auto-detect from your previous streak.'
+        description: 'Start date (YYYY-MM-DD). Leave blank to auto-detect from previous streak.'
         required: false
         default: ''
       endDate:
-        description: 'End date for backfill (format: YYYY-MM-DD). Leave blank for today.'
+        description: 'End date (YYYY-MM-DD). Leave blank for today.'
         required: false
         default: ''
       daysBack:
-        description: 'Alternative: number of past days to backfill (e.g. 7 or 30). Leave blank if using start date.'
+        description: 'Alternative: number of past days to backfill (e.g. 7 or 30).'
         required: false
         default: ''
 
@@ -41,5 +41,3 @@ jobs:
           DAYS_BACK: ${{ github.event.inputs.daysBack }}
           TOKEN: ${{ secrets.TOKEN }}
           USER_ID: ${{ secrets.USER_ID }}
-          token: ${{ secrets.TOKEN }}
-          userId: ${{ secrets.USER_ID }}

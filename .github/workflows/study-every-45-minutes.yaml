@@ -1,5 +1,5 @@
 name: 'Duolingo Periodic Practice'
-run-name: 'Periodic Practice (${{ github.event.inputs.lessonsToComplete || 1 }} lesson)'
+run-name: 'Periodic Duolingo Practice'
 
 on:
   workflow_dispatch:
@@ -31,8 +31,6 @@ jobs:
       - name: Run XP Script
         run: node xp.js
         env:
-          lessonsToComplete: ${{ github.event.inputs.lessonsToComplete || 1 }}
+          lessonsToComplete: ${{ github.event.inputs.lessonsToComplete }}
           TOKEN: ${{ secrets.TOKEN }}
           USER_ID: ${{ secrets.USER_ID }}
-          token: ${{ secrets.TOKEN }}
-          userId: ${{ secrets.USER_ID }}

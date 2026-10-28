@@ -28,5 +28,3 @@ jobs:
           lessonsToComplete: 1
           TOKEN: ${{ secrets.TOKEN }}
           USER_ID: ${{ secrets.USER_ID }}
-          token: ${{ secrets.TOKEN }}
-          userId: ${{ secrets.USER_ID }}
