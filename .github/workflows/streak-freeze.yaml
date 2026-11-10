@@ -1,0 +1,35 @@
+name: 'Add Streak Freezes'
+run-name: 'Add Duolingo Streak Freezes'
+
+on:
+  workflow_dispatch:
+    inputs:
+      amount:
+        description: 'Amount of streak freezes to equip (default: 2)'
+        required: false
+        default: '2'
+        type: string
+
+jobs:
+  add-freezes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Equip Streak Freezes
+        run: node streak-freeze.js
+        env:
+          FREEZES: ${{ github.event.inputs.amount || '2' }}
+          TOKEN: ${{ secrets.TOKEN }}
+          USER_ID: ${{ secrets.USER_ID }}

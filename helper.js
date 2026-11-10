@@ -655,6 +655,157 @@ async function getLeaderboardStatus(customToken, customUserId) {
     throw lastError || new Error('Failed to fetch leaderboard data.');
 }
 
+/**
+ * Fetches user profile along with inventory, gemsConfig, and lingots
+ */
+async function getUserInventoryAndGems(customToken, customUserId) {
+    const { token, userId } = (customToken && customUserId)
+        ? { token: cleanToken(customToken), userId: cleanString(customUserId) }
+        : getCredentials();
+
+    if (!token || !userId) {
+        throw new Error('Duolingo auth token and User ID are required.');
+    }
+
+    const headers = getHeaders(token);
+    const url = `https://www.duolingo.com/2017-06-30/users/${userId}?fields=gemsConfig,lingots,inventory,streakData,fromLanguage,learningLanguage,username,name`;
+
+    const res = await fetch(url, { headers, method: 'GET' });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to fetch inventory and gems (HTTP ${res.status}): ${text}`);
+    }
+
+    const data = await res.json();
+    const gems = typeof data.gemsConfig?.gems === 'number'
+        ? data.gemsConfig.gems
+        : (typeof data.lingots === 'number' ? data.lingots : 0);
+
+    const inventory = data.inventory || {};
+    const regularFreezes = inventory.streak_freeze?.quantity || 0;
+    const societyFreezes = inventory.society_streak_freeze?.quantity || 0;
+    const totalFreezes = regularFreezes + societyFreezes;
+
+    return {
+        userId,
+        username: data.username || data.name || userId,
+        gems,
+        lingots: data.lingots ?? 0,
+        gemsConfig: data.gemsConfig || null,
+        inventory,
+        regularFreezes,
+        societyFreezes,
+        totalFreezes,
+        fromLanguage: data.fromLanguage || 'en',
+        learningLanguage: data.learningLanguage || 'es',
+        streak: data.streakData?.currentStreak?.length || 0,
+        streakData: data.streakData || null
+    };
+}
+
+/**
+ * Claims a gem reward via Duolingo rewards PATCH endpoint
+ */
+async function claimGemReward(headers, userId, rewardId, languages = {}) {
+    const fromLanguage = languages.fromLanguage || 'en';
+    const learningLanguage = languages.learningLanguage || 'fr';
+    const url = `https://www.duolingo.com/2017-06-30/users/${userId}/rewards/${encodeURIComponent(rewardId)}`;
+
+    const payload = {
+        consumed: true,
+        fromLanguage,
+        learningLanguage
+    };
+
+    const res = await fetch(url, {
+        headers,
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        try {
+            return await res.json();
+        } catch {
+            return { ok: true };
+        }
+    }
+
+    // Fallback: try PUT on rewards consumer endpoint
+    try {
+        const altUrl = `https://www.duolingo.com/2017-06-30/rewards/users/${userId}/consume/${encodeURIComponent(rewardId)}`;
+        const altRes = await fetch(altUrl, {
+            headers,
+            method: 'PUT',
+            body: JSON.stringify(payload)
+        });
+        if (altRes.ok) {
+            return await altRes.json();
+        }
+    } catch {
+        // fallback error handled below
+    }
+
+    const text = await res.text();
+    throw new Error(`Failed to claim reward ${rewardId} (HTTP ${res.status}): ${text}`);
+}
+
+/**
+ * Purchases or equips a shop item (e.g. streak_freeze, society_streak_freeze)
+ */
+async function purchaseShopItem(headers, userId, itemName, languages = {}, options = {}) {
+    const isFree = options.isFree !== false; // default true for free bypass
+    const fromLanguage = languages.fromLanguage || 'en';
+    const learningLanguage = languages.learningLanguage || 'fr';
+
+    const url = `https://www.duolingo.com/2017-06-30/users/${userId}/shop-items`;
+    const payload = {
+        itemName,
+        isFree,
+        consumed: true,
+        fromLanguage,
+        learningLanguage
+    };
+
+    const res = await fetch(url, {
+        headers,
+        method: 'POST',
+        body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        try {
+            return await res.json();
+        } catch {
+            return { success: true, itemName };
+        }
+    }
+
+    // If isFree failed, try standard purchase if allowed
+    if (isFree && options.fallbackPaid !== false) {
+        try {
+            const paidRes = await fetch(url, {
+                headers,
+                method: 'POST',
+                body: JSON.stringify({
+                    itemName,
+                    isFree: false,
+                    fromLanguage,
+                    learningLanguage
+                })
+            });
+            if (paidRes.ok) {
+                return await paidRes.json();
+            }
+        } catch {
+            // fallback error handled below
+        }
+    }
+
+    const text = await res.text();
+    throw new Error(`Failed to acquire shop item ${itemName} (HTTP ${res.status}): ${text}`);
+}
+
 module.exports = {
     fetch,
     cleanString,
@@ -672,6 +823,9 @@ module.exports = {
     LEAGUE_NAMES,
     parseLeaderboardData,
     getLeaderboardStatus,
+    getUserInventoryAndGems,
+    claimGemReward,
+    purchaseShopItem,
     removeQuotes: cleanString,
     // Dynamic backward-compatible getter for legacy code
     get headers() {

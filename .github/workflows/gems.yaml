@@ -1,0 +1,35 @@
+name: 'Add Duolingo Gems'
+run-name: 'Add Duolingo Gems'
+
+on:
+  workflow_dispatch:
+    inputs:
+      amount:
+        description: 'Amount of gems to add (e.g. 100, 300, 500, 1000)'
+        required: false
+        default: '300'
+        type: string
+
+jobs:
+  add-gems:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Gems Generator
+        run: node gems.js
+        env:
+          GEMS: ${{ github.event.inputs.amount || '300' }}
+          TOKEN: ${{ secrets.TOKEN }}
+          USER_ID: ${{ secrets.USER_ID }}

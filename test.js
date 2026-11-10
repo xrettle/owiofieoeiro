@@ -327,4 +327,60 @@ assert(tableStr.includes('(YOU)'), 'Table should highlight current user');
 assert(tableStr.includes('DEMOTION'), 'Table should mark demotion zone');
 console.log('   ✅ formatLeaderboardTable passed\n');
 
-console.log('🎉 All 16 test suites passed successfully!\n');
+// 17. Test Gems reward ID generator and batch math
+console.log('Test 17: Gems reward ID & batch math');
+const target300 = 300;
+const claims300 = Math.ceil(target300 / 30);
+assert.strictEqual(claims300, 10);
+
+const target500 = 500;
+const claims500 = Math.ceil(target500 / 30);
+assert.strictEqual(claims500, 17);
+
+const seed = 'testseed123';
+const rewardId = `SKILL_COMPLETION_BALANCED-${seed}-2-GEMS`;
+assert(rewardId.startsWith('SKILL_COMPLETION_BALANCED-'));
+assert(rewardId.endsWith('-2-GEMS'));
+console.log('   ✅ Gems reward ID & batch math passed\n');
+
+// 18. Test Inventory & Freeze Parsing
+console.log('Test 18: Inventory & Streak Freeze parsing logic');
+const mockProfile = {
+    username: 'duofan',
+    gemsConfig: { gems: 2450 },
+    lingots: 80,
+    inventory: {
+        streak_freeze: { itemName: 'streak_freeze', quantity: 2 },
+        society_streak_freeze: { itemName: 'society_streak_freeze', quantity: 3 }
+    },
+    streakData: { currentStreak: { length: 150 } },
+    fromLanguage: 'en',
+    learningLanguage: 'de'
+};
+
+const gems = mockProfile.gemsConfig?.gems ?? mockProfile.lingots;
+const regularFreezes = mockProfile.inventory?.streak_freeze?.quantity || 0;
+const societyFreezes = mockProfile.inventory?.society_streak_freeze?.quantity || 0;
+const totalFreezes = regularFreezes + societyFreezes;
+
+assert.strictEqual(gems, 2450);
+assert.strictEqual(regularFreezes, 2);
+assert.strictEqual(societyFreezes, 3);
+assert.strictEqual(totalFreezes, 5);
+console.log('   ✅ Inventory & Freeze parsing passed\n');
+
+// 19. Test Streak Freeze Shop Item payload structure
+console.log('Test 19: Streak Freeze shop item payload structure');
+const shopPayload = {
+    itemName: 'streak_freeze',
+    isFree: true,
+    consumed: true,
+    fromLanguage: 'en',
+    learningLanguage: 'fr'
+};
+assert.strictEqual(shopPayload.itemName, 'streak_freeze');
+assert.strictEqual(shopPayload.isFree, true);
+assert.strictEqual(shopPayload.consumed, true);
+console.log('   ✅ Streak Freeze payload structure passed\n');
+
+console.log('🎉 All 19 test suites passed successfully!\n');

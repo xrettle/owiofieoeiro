@@ -67,6 +67,30 @@ Never get demoted from your Duolingo League again! The League Checker monitors y
 
 ---
 
+### Custom Gems & Streak Freezes
+
+You can now generate custom amounts of Gems and equip Streak Freezes directly onto your Duolingo account:
+
+#### 💎 Adding Custom Gems:
+- Claims balanced skill completion rewards in paced succession (+30 Gems per claim).
+- Supports any custom amount: 100, 300, 500, 1000, or more!
+- **Via GitHub Actions:** Go to **Actions** > **Add Duolingo Gems** > **Run workflow** (enter your custom amount, e.g. `500`).
+- **Locally:**
+  ```bash
+  GEMS=500 TOKEN="your_jwt_token_here" npm run gems
+  ```
+
+#### ❄️ Equipping Streak Freezes:
+- Automatically equips regular `streak_freeze` and Streak Society freezes directly to your inventory.
+- Max capacity is automatically handled (standard accounts hold up to 2; Streak Society holds up to 5).
+- **Via GitHub Actions:** Go to **Actions** > **Add Streak Freezes** > **Run workflow** (enter amount, e.g. `2`).
+- **Locally:**
+  ```bash
+  FREEZES=2 TOKEN="your_jwt_token_here" npm run freeze
+  ```
+
+---
+
 ### Available Workflows
 
 Once your `TOKEN` secret is added, go to the **Actions** tab on your GitHub repository:
@@ -75,6 +99,8 @@ Once your `TOKEN` secret is added, go to the **Actions** tab on your GitHub repo
 | :--- | :--- | :--- |
 | **Duolingo Streak Keeper** | Automated across daily random slots | Completes 1 lesson at a random time within your active time slots and defends your League rank. |
 | **Duolingo League Checker** | Manual (`Run workflow`) | Checks your league rank/demotion zone and grinds to top 5 if in demotion danger. |
+| **Add Duolingo Gems** | Manual (`Run workflow`) | Adds a custom amount of Gems to your Duolingo account (e.g. 100, 300, 500, 1000). |
+| **Add Streak Freezes** | Manual (`Run workflow`) | Equips custom amounts of Streak Freezes to protect your streak on missed days. |
 | **Duolingo Streak Reviver (Backfill)** | Manual (`Run workflow`) | Iterates day-by-day to complete backdated practice lessons for missed dates. |
 | **Duolingo XP Farm** | Manual (`Run workflow`) | Earns XP by completing multiple practice lessons (customizable amount). |
 | **Duolingo Periodic Practice** | Every 45 minutes & Manual | Regularly runs practice sessions throughout the day. |
@@ -125,10 +151,16 @@ TOKEN="your_jwt_token_here" MODE=immediate npm run streak
 # 4. Run the league checker & demotion defense:
 TOKEN="your_jwt_token_here" npm run league
 
-# 5. Farm XP (complete multiple lessons):
+# 5. Add custom gems (e.g. 500 gems):
+GEMS=500 TOKEN="your_jwt_token_here" npm run gems
+
+# 6. Equip streak freezes (e.g. 2 freezes):
+FREEZES=2 TOKEN="your_jwt_token_here" npm run freeze
+
+# 7. Farm XP (complete multiple lessons):
 lessonsToComplete=5 TOKEN="your_jwt_token_here" npm run xp
 
-# 6. Attempt unlimited hearts:
+# 8. Attempt unlimited hearts:
 TOKEN="your_jwt_token_here" npm run unlimitedhearts
 ```
 

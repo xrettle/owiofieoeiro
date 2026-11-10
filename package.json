@@ -1,12 +1,14 @@
 {
   "name": "duolingohack",
-  "version": "2.2.0",
-  "description": "Keep your Duolingo streak alive with randomized timing, defend your league rank, backfill missed days, and earn XP automatically.",
+  "version": "2.3.0",
+  "description": "Keep your Duolingo streak alive with randomized timing, defend your league rank, add custom gems and streak freezes, and earn XP automatically.",
   "main": "streak-keeper.js",
   "scripts": {
     "start": "node streak-keeper.js",
     "streak": "node streak-keeper.js",
     "league": "node league-checker.js",
+    "gems": "node gems.js",
+    "freeze": "node streak-freeze.js",
     "xp": "node xp.js",
     "revive": "node revive.js",
     "unlimitedhearts": "node unlimitedhearts.js",
