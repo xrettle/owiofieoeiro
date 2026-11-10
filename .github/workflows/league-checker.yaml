@@ -1,0 +1,48 @@
+name: 'Duolingo League Checker'
+run-name: 'Check & Defend Duolingo League'
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_rank:
+        description: 'Target rank to reach (default: 5th place)'
+        required: false
+        default: '5'
+        type: string
+      max_lessons:
+        description: 'Maximum lessons safety cap per run'
+        required: false
+        default: '25'
+        type: string
+      dry_run:
+        description: 'Dry run inspection only (do not complete lessons)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  run-league-checker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run League Checker
+        run: node league-checker.js
+        env:
+          TARGET_RANK: ${{ github.event.inputs.target_rank || '5' }}
+          MAX_LEAGUE_LESSONS: ${{ github.event.inputs.max_lessons || '25' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          TIMEZONE: ${{ vars.TIMEZONE || 'America/Los_Angeles' }}
+          TOKEN: ${{ secrets.TOKEN }}
+          USER_ID: ${{ secrets.USER_ID }}

@@ -12,6 +12,8 @@ const {
     getHeaders,
     getLocalTimeInfo,
     hasPracticedToday,
+    LEAGUE_NAMES,
+    parseLeaderboardData,
     removeQuotes
 } = require('./helper.js');
 
@@ -21,6 +23,11 @@ const {
     getDaySchedule,
     getCurrentSlot
 } = require('./streak-keeper.js');
+
+const {
+    getRandomDelay,
+    formatLeaderboardTable
+} = require('./league-checker.js');
 
 console.log('🧪 Starting test suite...\n');
 
@@ -183,4 +190,141 @@ assert.strictEqual(getCurrentSlot(20 * 60 + 30)?.name, 'Evening');
 assert.strictEqual(getCurrentSlot(22 * 60), null);
 console.log('   ✅ getCurrentSlot passed\n');
 
-console.log('🎉 All 10 test suites passed successfully!\n');
+// 11. Test LEAGUE_NAMES definitions
+console.log('Test 11: LEAGUE_NAMES definitions');
+assert.strictEqual(LEAGUE_NAMES.length, 10);
+assert.strictEqual(LEAGUE_NAMES[0], 'Bronze');
+assert.strictEqual(LEAGUE_NAMES[1], 'Silver');
+assert.strictEqual(LEAGUE_NAMES[2], 'Gold');
+assert.strictEqual(LEAGUE_NAMES[3], 'Sapphire');
+assert.strictEqual(LEAGUE_NAMES[4], 'Ruby');
+assert.strictEqual(LEAGUE_NAMES[5], 'Emerald');
+assert.strictEqual(LEAGUE_NAMES[6], 'Amethyst');
+assert.strictEqual(LEAGUE_NAMES[7], 'Pearl');
+assert.strictEqual(LEAGUE_NAMES[8], 'Obsidian');
+assert.strictEqual(LEAGUE_NAMES[9], 'Diamond');
+console.log('   ✅ LEAGUE_NAMES passed\n');
+
+// 12. Test parseLeaderboardData & Demotion Zone Detection
+console.log('Test 12: parseLeaderboardData Demotion Zone detection');
+// Construct mock cohort of 30 users
+const mockRankings = [];
+for (let i = 1; i <= 30; i++) {
+    mockRankings.push({
+        user_id: 1000 + i,
+        display_name: `User_${i}`,
+        score: (31 - i) * 20, // 1st has 600 XP, 5th has 520 XP, 30th has 20 XP
+        avatar_url: `https://avatar.url/${i}`,
+        has_recent_activity_15: false,
+        streak_extended_today: true
+    });
+}
+// Current user is at Rank 28 (User_28, user_id 1028)
+const mockLbPayload = {
+    tier: 5, // Emerald
+    streak_in_tier: 2,
+    num_wins: 1,
+    active: {
+        score: 60,
+        user_id: 1028,
+        is_demoted: true,
+        is_promoted: false,
+        cohort: {
+            cohort_id: 'cohort-uuid-1234',
+            tier: 5,
+            rankings: mockRankings
+        },
+        contest: {
+            contest_end: '2026-11-15T23:59:59Z',
+            contest_start: '2026-11-08T00:00:00Z',
+            ruleset: {
+                cohort_size: 30,
+                num_promoted: 7,
+                num_demoted: 5
+            }
+        }
+    }
+};
+
+const parsedDemoted = parseLeaderboardData(mockLbPayload, 1028);
+assert.strictEqual(parsedDemoted.valid, true);
+assert.strictEqual(parsedDemoted.leagueName, 'Emerald');
+assert.strictEqual(parsedDemoted.currentRank, 28);
+assert.strictEqual(parsedDemoted.userScore, 60);
+assert.strictEqual(parsedDemoted.isInDemotionZone, true);
+assert.strictEqual(parsedDemoted.isSafe, false);
+assert.strictEqual(parsedDemoted.isInPromotionZone, false);
+assert.strictEqual(parsedDemoted.demotionCutoffRank, 26);
+assert.strictEqual(parsedDemoted.targetRank, 5);
+assert.strictEqual(parsedDemoted.fifthPlaceScore, 520);
+// 5th place has 520 XP, current user has 60 XP. Need 520 - 60 + 15 = 475 XP
+assert.strictEqual(parsedDemoted.xpNeededForFifth, 475);
+console.log('   ✅ Demotion Zone detection & 5th place math passed\n');
+
+// 13. Test parseLeaderboardData Safe & Promotion Zones
+console.log('Test 13: parseLeaderboardData Safe & Promotion Zones');
+// Scenario A: User is Rank 12 (Safe Zone)
+const parsedSafe = parseLeaderboardData(mockLbPayload, 1012);
+assert.strictEqual(parsedSafe.currentRank, 12);
+assert.strictEqual(parsedSafe.isInDemotionZone, false);
+assert.strictEqual(parsedSafe.isSafe, true);
+assert.strictEqual(parsedSafe.isInPromotionZone, false);
+
+// Scenario B: User is Rank 3 (Promotion Zone)
+const parsedPromo = parseLeaderboardData(mockLbPayload, 1003);
+assert.strictEqual(parsedPromo.currentRank, 3);
+assert.strictEqual(parsedPromo.isInPromotionZone, true);
+assert.strictEqual(parsedPromo.isInDemotionZone, false);
+assert.strictEqual(parsedPromo.isSafe, true);
+console.log('   ✅ Safe & Promotion Zones passed\n');
+
+// 14. Test parseLeaderboardData in Bronze League (Tier 0, No Demotion)
+console.log('Test 14: Bronze League (Tier 0) has NO demotion');
+const bronzePayload = {
+    tier: 0,
+    active: {
+        score: 10,
+        user_id: 1030,
+        is_demoted: false,
+        is_promoted: false,
+        cohort: {
+            cohort_id: 'bronze-uuid',
+            tier: 0,
+            rankings: mockRankings
+        },
+        contest: {
+            ruleset: {
+                cohort_size: 30,
+                num_promoted: 10,
+                num_demoted: 0
+            }
+        }
+    }
+};
+const parsedBronze = parseLeaderboardData(bronzePayload, 1030);
+assert.strictEqual(parsedBronze.leagueName, 'Bronze');
+assert.strictEqual(parsedBronze.currentRank, 30); // 30th place
+assert.strictEqual(parsedBronze.isInDemotionZone, false); // Bronze NEVER demotes!
+assert.strictEqual(parsedBronze.demotedCount, 0);
+assert.strictEqual(parsedBronze.isSafe, true);
+console.log('   ✅ Bronze League (Tier 0) passed\n');
+
+// 15. Test getRandomDelay Range (1 to 2 minutes)
+console.log('Test 15: getRandomDelay range bounds (60s to 120s)');
+for (let i = 0; i < 500; i++) {
+    const delay = getRandomDelay(60, 120);
+    assert(delay >= 60000, `Delay ${delay} is below 60,000ms`);
+    assert(delay <= 120000, `Delay ${delay} is above 120,000ms`);
+}
+console.log('   ✅ getRandomDelay passed across 500 random samples\n');
+
+// 16. Test formatLeaderboardTable output
+console.log('Test 16: formatLeaderboardTable generation');
+const tableStr = formatLeaderboardTable(parsedDemoted);
+assert(tableStr.includes('User_1'), 'Table should include 1st place');
+assert(tableStr.includes('User_5'), 'Table should include 5th place target');
+assert(tableStr.includes('(YOU)'), 'Table should highlight current user');
+assert(tableStr.includes('DEMOTION'), 'Table should mark demotion zone');
+console.log('   ✅ formatLeaderboardTable passed\n');
+
+console.log('🎉 All 16 test suites passed successfully!\n');

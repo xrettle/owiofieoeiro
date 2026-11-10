@@ -53,13 +53,28 @@ Each day, the scheduler randomly chooses **one** of three realistic daily active
 
 ---
 
+### League Checker & Demotion Defense
+
+Never get demoted from your Duolingo League again! The League Checker monitors your competitive standing and protects you automatically:
+
+#### Key Capabilities:
+- **Comprehensive League Inspection:** Detects your League tier (Bronze, Silver, Gold, Sapphire, Ruby, Emerald, Amethyst, Pearl, Obsidian, or Diamond), current rank, user XP, and displays an ASCII table of your cohort's XP standings.
+- **Zone Awareness:** Automatically identifies whether you are in the **Promotion Zone**, **Safe Zone**, or **Demotion Zone** (based on tier rulesets and cohort size).
+- **Automated Demotion Defense:** If you fall into the demotion zone, it automatically grinds lessons until you reach **at least 5th place** (keeping you safely between **1st and 9th place**).
+- **Human-like Pacing (Anti-Detection):** To look completely natural and prevent API rate-limiting or bot detection, it waits a **randomized pause of 1 to 2 minutes (60–120 seconds)** between each lesson completed.
+- **Seamless Streak Keeper Integration:** The League Checker automatically runs alongside the Streak Keeper during its randomized daily time slots (Morning, Afternoon, and Evening), so your league rank is continually audited and defended throughout the day.
+- **Toggle Control:** Enabled by default. You can disable it at any time by setting `LEAGUE_CHECKER=false`.
+
+---
+
 ### Available Workflows
 
 Once your `TOKEN` secret is added, go to the **Actions** tab on your GitHub repository:
 
 | Workflow | Schedule / Trigger | Purpose |
 | :--- | :--- | :--- |
-| **Duolingo Streak Keeper** | Automated across daily random slots | Completes 1 lesson at a random time within your active time slots. |
+| **Duolingo Streak Keeper** | Automated across daily random slots | Completes 1 lesson at a random time within your active time slots and defends your League rank. |
+| **Duolingo League Checker** | Manual (`Run workflow`) | Checks your league rank/demotion zone and grinds to top 5 if in demotion danger. |
 | **Duolingo Streak Reviver (Backfill)** | Manual (`Run workflow`) | Iterates day-by-day to complete backdated practice lessons for missed dates. |
 | **Duolingo XP Farm** | Manual (`Run workflow`) | Earns XP by completing multiple practice lessons (customizable amount). |
 | **Duolingo Periodic Practice** | Every 45 minutes & Manual | Regularly runs practice sessions throughout the day. |
@@ -107,10 +122,13 @@ TOKEN="your_jwt_token_here" MODE=check npm run streak
 # 3. Run the streak keeper immediately:
 TOKEN="your_jwt_token_here" MODE=immediate npm run streak
 
-# 4. Farm XP (complete multiple lessons):
+# 4. Run the league checker & demotion defense:
+TOKEN="your_jwt_token_here" npm run league
+
+# 5. Farm XP (complete multiple lessons):
 lessonsToComplete=5 TOKEN="your_jwt_token_here" npm run xp
 
-# 5. Attempt unlimited hearts:
+# 6. Attempt unlimited hearts:
 TOKEN="your_jwt_token_here" npm run unlimitedhearts
 ```
 

@@ -19,6 +19,7 @@ const {
     getCredentials
 } = require('./helper.js');
 const { completeLessons, sleep } = require('./xp.js');
+const { checkAndDefendLeague } = require('./league-checker.js');
 
 /**
  * Default daily active time windows
@@ -122,6 +123,8 @@ const main = async () => {
     console.log(`🎯 Today's Target Time: ${schedule.targetTimeStr}`);
     console.log(`====================================================\n`);
 
+    const isLeagueCheckerEnabled = process.env.LEAGUE_CHECKER !== 'false' && process.env.LEAGUE_CHECKER !== '0';
+
     // Mode 1: Check / Dry-Run
     if (mode === 'check' || mode === 'dry-run') {
         console.log('🔍 Mode: Check (Dry-Run inspection only)');
@@ -134,6 +137,16 @@ const main = async () => {
         } catch (err) {
             console.log(`⚠️ Note: Unable to check live user status: ${err.message}`);
         }
+
+        if (isLeagueCheckerEnabled) {
+            console.log('\n📊 Checking League Status (Dry-Run)...');
+            try {
+                await checkAndDefendLeague({ dryRun: true });
+            } catch (lbErr) {
+                console.log(`⚠️ League status check skipped: ${lbErr.message}`);
+            }
+        }
+
         console.log('\nDry-run complete. Exiting.');
         process.exit(0);
     }
@@ -142,21 +155,28 @@ const main = async () => {
     if (mode === 'immediate' || mode === 'now' || process.env.FORCE === 'true') {
         console.log('⚡ Immediate execution requested. Running lesson now...');
         await completeLessons(1);
+
+        if (isLeagueCheckerEnabled) {
+            console.log('\n🛡️ Running League Checker after practice...');
+            await checkAndDefendLeague();
+        }
+
         process.exit(0);
     }
 
     // Mode 3: Intelligent Randomized Scheduler
     console.log('🔄 Checking if Duolingo practice is already completed today...');
     let userInfo = null;
+    let alreadyPracticed = false;
     try {
         userInfo = await getUserLanguages();
-        if (hasPracticedToday(userInfo, localInfo.dateStr, timeZone)) {
+        alreadyPracticed = hasPracticedToday(userInfo, localInfo.dateStr, timeZone);
+        if (alreadyPracticed) {
             console.log(`\n🎉 Today's practice is ALREADY completed on Duolingo!`);
             console.log(`🔥 Current Streak: ${userInfo.streak} days maintained.`);
-            console.log(`👉 No additional practice needed today. Exiting cleanly.`);
-            process.exit(0);
+        } else {
+            console.log(`ℹ️ Today's practice not yet recorded. Current Streak: ${userInfo.streak} days.`);
         }
-        console.log(`ℹ️ Today's practice not yet recorded. Current Streak: ${userInfo.streak} days.`);
     } catch (fetchErr) {
         console.warn(`⚠️ Warning: Could not verify today's practice status (${fetchErr.message}). Proceeding with schedule.`);
     }
@@ -167,6 +187,12 @@ const main = async () => {
     if (!currentSlot) {
         console.log(`\n⏰ Current time (${localInfo.timeStr}) is outside all configured time slots:`);
         TIME_SLOTS.forEach(s => console.log(`   - ${s.name}: ${s.start} - ${s.end}`));
+
+        if (alreadyPracticed && isLeagueCheckerEnabled) {
+            console.log('\n🛡️ Checking League status during background run...');
+            await checkAndDefendLeague();
+        }
+
         console.log(`Exiting cleanly.`);
         process.exit(0);
     }
@@ -175,6 +201,17 @@ const main = async () => {
 
     const isTargetSlot = currentSlot.id === schedule.slot.id;
     const isFinalSlot = currentSlot.id === TIME_SLOTS[TIME_SLOTS.length - 1].id;
+
+    // If practice was already completed today, we don't need to do another streak lesson,
+    // but we STILL run the league defense to keep you safe from demotion during the slot!
+    if (alreadyPracticed) {
+        console.log(`\n👉 Daily streak is already safe. Running League Checker to protect from demotion...`);
+        if (isLeagueCheckerEnabled) {
+            await checkAndDefendLeague();
+        }
+        console.log(`\n✨ Streak keeper run completed cleanly!`);
+        process.exit(0);
+    }
 
     // If this is NOT today's selected slot
     if (!isTargetSlot) {
@@ -208,8 +245,15 @@ const main = async () => {
         console.log(`\n⏰ Waking up at ${schedule.targetTimeStr}! Starting practice lesson...`);
     }
 
-    // Complete the lesson!
+    // Complete the daily practice lesson!
     await completeLessons(1);
+
+    // Run League Defense after lesson completion
+    if (isLeagueCheckerEnabled) {
+        console.log(`\n🛡️ Running League Checker following practice completion...`);
+        await checkAndDefendLeague();
+    }
+
     console.log(`\n✨ Streak keeper run completed successfully!`);
 };
 

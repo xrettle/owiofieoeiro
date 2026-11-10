@@ -427,6 +427,234 @@ async function submitPracticeSession(headers, session, targetTimestamp) {
     return await res.json();
 }
 
+/**
+ * Official Duolingo League Tiers (0 to 9)
+ */
+const LEAGUE_NAMES = [
+    'Bronze',   // 0
+    'Silver',   // 1
+    'Gold',     // 2
+    'Sapphire', // 3
+    'Ruby',     // 4
+    'Emerald',  // 5
+    'Amethyst', // 6
+    'Pearl',    // 7
+    'Obsidian', // 8
+    'Diamond'   // 9
+];
+
+/**
+ * Parses raw Duolingo leaderboard API JSON payload
+ *
+ * @param {object} data Raw JSON from duolingo-leaderboards-prod
+ * @param {string|number} userId Target user's account ID
+ * @returns {object} Normalized leaderboard status
+ */
+function parseLeaderboardData(data, userId) {
+    if (!data || typeof data !== 'object') {
+        return {
+            valid: false,
+            error: 'Empty or invalid leaderboard payload',
+            hasActiveCohort: false
+        };
+    }
+
+    const tier = typeof data.tier === 'number' ? data.tier : 0;
+    const leagueNames = Array.isArray(data.league_ids) && data.league_ids.length > 0
+        ? data.league_ids
+        : LEAGUE_NAMES;
+    const leagueName = leagueNames[tier] || `Tier ${tier}`;
+
+    const streakInTier = typeof data.streak_in_tier === 'number' ? data.streak_in_tier : 0;
+    const topThreeFinishes = typeof data.top_three_finishes === 'number' ? data.top_three_finishes : 0;
+    const numWins = typeof data.num_wins === 'number' ? data.num_wins : 0;
+
+    const active = data.active;
+    if (!active || !active.cohort || !Array.isArray(active.cohort.rankings)) {
+        return {
+            valid: true,
+            tier,
+            leagueName,
+            streakInTier,
+            topThreeFinishes,
+            numWins,
+            hasActiveCohort: false,
+            message: 'User is not currently placed in an active weekly cohort (complete 1 lesson to join).'
+        };
+    }
+
+    const rawRankings = active.cohort.rankings;
+    const strUserId = userId ? String(userId) : null;
+
+    const rankings = rawRankings.map((r, idx) => ({
+        rank: idx + 1,
+        userId: String(r.user_id),
+        displayName: r.display_name || `User ${r.user_id}`,
+        score: typeof r.score === 'number' ? r.score : 0,
+        avatarUrl: r.avatar_url || null,
+        hasRecentActivity: Boolean(r.has_recent_activity_15),
+        streakExtendedToday: Boolean(r.streak_extended_today),
+        isCurrentUser: strUserId ? String(r.user_id) === strUserId : false
+    }));
+
+    const totalUsers = rankings.length;
+    let currentUser = rankings.find(r => r.isCurrentUser);
+
+    if (!currentUser && strUserId) {
+        // Fallback if user is in active payload directly
+        currentUser = {
+            rank: totalUsers + 1,
+            userId: strUserId,
+            displayName: 'You',
+            score: typeof active.score === 'number' ? active.score : 0,
+            avatarUrl: null,
+            hasRecentActivity: false,
+            streakExtendedToday: false,
+            isCurrentUser: true
+        };
+    }
+
+    const currentRank = currentUser ? currentUser.rank : null;
+    const userScore = currentUser ? currentUser.score : 0;
+
+    // Ruleset evaluation for promotion & demotion
+    const ruleset = active.contest?.ruleset || data.leaderboard?.ruleset || {};
+
+    // 1. Promoted count
+    let promotedCount = 0;
+    if (typeof ruleset.num_promoted === 'number') {
+        promotedCount = ruleset.num_promoted;
+    } else if (Array.isArray(ruleset.num_promoted)) {
+        promotedCount = ruleset.num_promoted.length === 1 && typeof ruleset.num_promoted[0] === 'number' && ruleset.num_promoted[0] < 15
+            ? ruleset.num_promoted[0]
+            : ruleset.num_promoted.length;
+    } else if (typeof ruleset.num_winners === 'number') {
+        promotedCount = ruleset.num_winners;
+    }
+    // Default promotion count if not specified
+    if (promotedCount === 0 && totalUsers > 0 && tier < 9) {
+        promotedCount = Math.min(7, totalUsers);
+    }
+    const promotionCutoffRank = promotedCount > 0 ? promotedCount : null;
+
+    // 2. Demoted count
+    let demotedCount = 0;
+    if (typeof ruleset.num_demoted === 'number') {
+        demotedCount = ruleset.num_demoted;
+    } else if (Array.isArray(ruleset.num_demoted)) {
+        demotedCount = ruleset.num_demoted.length === 1 && typeof ruleset.num_demoted[0] === 'number' && ruleset.num_demoted[0] < 15
+            ? ruleset.num_demoted[0]
+            : ruleset.num_demoted.length;
+    } else if (typeof ruleset.num_losers === 'number') {
+        demotedCount = ruleset.num_losers;
+    }
+    // Bronze tier (0) has no demotion
+    if (tier === 0) {
+        demotedCount = 0;
+    } else if (demotedCount === 0 && totalUsers >= 10) {
+        demotedCount = Math.min(5, Math.floor(totalUsers / 3));
+    }
+    const demotionCutoffRank = (demotedCount > 0 && totalUsers >= demotedCount)
+        ? (totalUsers - demotedCount + 1)
+        : null;
+
+    // Status flags: rank relative to cutoffs is the ground truth
+    const isInDemotionZone = tier > 0 && Boolean(
+        demotionCutoffRank && currentRank
+            ? currentRank >= demotionCutoffRank
+            : active.is_demoted
+    );
+
+    const isInPromotionZone = Boolean(
+        promotionCutoffRank && currentRank
+            ? currentRank <= promotionCutoffRank
+            : active.is_promoted
+    );
+
+    const isSafe = !isInDemotionZone;
+
+    // Target 5th Place (or highest possible rank in small cohort)
+    const targetRank = Math.min(5, totalUsers || 5);
+    const fifthPlaceUser = totalUsers >= targetRank ? rankings[targetRank - 1] : null;
+    const fifthPlaceScore = fifthPlaceUser ? fifthPlaceUser.score : 0;
+
+    let xpNeededForFifth = 0;
+    if (currentRank && currentRank > targetRank) {
+        xpNeededForFifth = Math.max(15, (fifthPlaceScore - userScore) + 15);
+    }
+
+    return {
+        valid: true,
+        hasActiveCohort: true,
+        tier,
+        leagueName,
+        streakInTier,
+        topThreeFinishes,
+        numWins,
+        totalUsers,
+        rankings,
+        currentUser,
+        currentRank,
+        userScore,
+        promotedCount,
+        promotionCutoffRank,
+        demotedCount,
+        demotionCutoffRank,
+        isInPromotionZone,
+        isInDemotionZone,
+        isSafe,
+        targetRank,
+        fifthPlaceUser,
+        fifthPlaceScore,
+        xpNeededForFifth,
+        contestStart: active.contest?.contest_start ? new Date(active.contest.contest_start) : null,
+        contestEnd: active.contest?.contest_end ? new Date(active.contest.contest_end) : null
+    };
+}
+
+/**
+ * Fetches current Duolingo leaderboard status from production microservice
+ */
+async function getLeaderboardStatus(customToken, customUserId) {
+    const { token, userId } = (customToken && customUserId)
+        ? { token: cleanToken(customToken), userId: cleanString(customUserId) }
+        : getCredentials();
+
+    if (!token) {
+        throw new Error('Duolingo auth token (TOKEN) is required to check leaderboards.');
+    }
+    if (!userId) {
+        throw new Error('Duolingo user ID is required to check leaderboards.');
+    }
+
+    const headers = getHeaders(token);
+    const leaderboardIds = [
+        '7d9f5dd1-8423-491a-91f2-2532052038ce', // Standard leagues
+        '4b668ba6-288d-4b78-81a3-7b213175ae2c'  // Diamond Tournament fallback
+    ];
+
+    let lastError = null;
+    for (const lbId of leaderboardIds) {
+        try {
+            const url = `https://duolingo-leaderboards-prod.duolingo.com/leaderboards/${lbId}/users/${userId}?client_unlocked=true&get_reactions=true`;
+            const res = await fetch(url, { headers, method: 'GET' });
+            if (res.ok) {
+                const data = await res.json();
+                return parseLeaderboardData(data, userId);
+            }
+            if (res.status === 401) {
+                throw new Error('Duolingo Authentication Failed (HTTP 401 Unauthorized) when checking leaderboards.');
+            }
+            const errText = await res.text();
+            lastError = new Error(`HTTP ${res.status}: ${errText}`);
+        } catch (err) {
+            lastError = err;
+        }
+    }
+
+    throw lastError || new Error('Failed to fetch leaderboard data.');
+}
+
 module.exports = {
     fetch,
     cleanString,
@@ -441,6 +669,9 @@ module.exports = {
     getUserLanguages,
     createPracticeSession,
     submitPracticeSession,
+    LEAGUE_NAMES,
+    parseLeaderboardData,
+    getLeaderboardStatus,
     removeQuotes: cleanString,
     // Dynamic backward-compatible getter for legacy code
     get headers() {
