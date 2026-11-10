@@ -1,12 +1,12 @@
 {
   "name": "duolingohack",
-  "version": "2.0.0",
-  "description": "Keep your Duolingo streak alive, backfill missed days, and earn XP automatically.",
-  "main": "xp.js",
+  "version": "2.1.0",
+  "description": "Keep your Duolingo streak alive with randomized timing, backfill missed days, and earn XP automatically.",
+  "main": "streak-keeper.js",
   "scripts": {
-    "start": "node xp.js",
+    "start": "node streak-keeper.js",
+    "streak": "node streak-keeper.js",
     "xp": "node xp.js",
-    "streak": "node xp.js",
     "revive": "node revive.js",
     "unlimitedhearts": "node unlimitedhearts.js",
     "test": "node test.js"

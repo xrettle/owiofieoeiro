@@ -1,5 +1,5 @@
 /**
- * Unit Test Suite for Duolingo Streak Keeper & Helper Utilities
+ * Unit Test Suite for Duolingo Streak Keeper, Helper Utilities, and Scheduler
  */
 
 const assert = require('assert');
@@ -10,8 +10,17 @@ const {
     getUserIdFromToken,
     getCredentials,
     getHeaders,
+    getLocalTimeInfo,
+    hasPracticedToday,
     removeQuotes
 } = require('./helper.js');
+
+const {
+    TIME_SLOTS,
+    pseudoRandom,
+    getDaySchedule,
+    getCurrentSlot
+} = require('./streak-keeper.js');
 
 console.log('🧪 Starting test suite...\n');
 
@@ -67,7 +76,6 @@ console.log('   ✅ getUserIdFromToken & inspectToken passed\n');
 
 // 4. Test getCredentials
 console.log('Test 4: getCredentials auto-resolution');
-// Scenario A: User only provides TOKEN
 process.env.TOKEN = mockJwt;
 delete process.env.token;
 delete process.env.USER_ID;
@@ -76,10 +84,10 @@ let creds = getCredentials();
 assert.strictEqual(creds.token, mockJwt);
 assert.strictEqual(creds.userId, '84920194'); // Auto-extracted from JWT!
 
-// Scenario B: User provided logged_out_uuid as USER_ID (the old bug from README)
-process.env.USER_ID = '3a5c12e4-789a-4bc1-9012-3456789abcde'; // A UUID
+// Scenario B: User provided logged_out_uuid as USER_ID
+process.env.USER_ID = '3a5c12e4-789a-4bc1-9012-3456789abcde';
 creds = getCredentials();
-assert.strictEqual(creds.userId, '84920194'); // Should override UUID with real sub from token!
+assert.strictEqual(creds.userId, '84920194'); // Sub from token overrides UUID!
 
 // Scenario C: User provided real numeric ID
 process.env.USER_ID = '12345678';
@@ -96,23 +104,83 @@ assert.strictEqual(headers['accept'], 'application/json');
 assert.strictEqual(headers['referer'], 'https://www.duolingo.com/practice');
 console.log('   ✅ getHeaders passed\n');
 
-// 6. Test Date Range Generation for Backfill Loop
-console.log('Test 6: Date range generation for backfilling');
-function generateDateRange(startStr, endStr) {
-    const dates = [];
-    const cur = new Date(startStr);
-    cur.setUTCHours(12, 0, 0, 0);
-    const end = new Date(endStr);
-    end.setUTCHours(12, 0, 0, 0);
-    while (cur <= end) {
-        dates.push(cur.toISOString().split('T')[0]);
-        cur.setUTCDate(cur.getUTCDate() + 1);
-    }
-    return dates;
+// 6. Test Timezone & Local Time Info
+console.log('Test 6: getLocalTimeInfo');
+const testDate = new Date('2026-11-09T20:45:00Z'); // 20:45 UTC is 12:45 PST (UTC-8)
+const infoLA = getLocalTimeInfo(testDate, 'America/Los_Angeles');
+assert.strictEqual(infoLA.dateStr, '2026-11-09');
+assert.strictEqual(infoLA.hour, 12);
+assert.strictEqual(infoLA.minute, 45);
+assert.strictEqual(infoLA.totalMinutes, 12 * 60 + 45);
+console.log('   ✅ getLocalTimeInfo passed\n');
+
+// 7. Test hasPracticedToday
+console.log('Test 7: hasPracticedToday');
+const todayStr = '2026-11-09';
+assert.strictEqual(hasPracticedToday({ streakData: { currentStreak: { endDate: '2026-11-09' } } }, todayStr), true);
+assert.strictEqual(hasPracticedToday({ streakData: { currentStreak: { endDate: '2026-11-08' } } }, todayStr), false);
+assert.strictEqual(hasPracticedToday({ streakData: { updatedTimestamp: testDate.getTime() } }, todayStr), true);
+assert.strictEqual(hasPracticedToday({ xpGains: [{ time: testDate.getTime(), xp: 15 }] }, todayStr), true);
+assert.strictEqual(hasPracticedToday({}, todayStr), false);
+assert.strictEqual(hasPracticedToday(null, todayStr), false);
+console.log('   ✅ hasPracticedToday passed\n');
+
+// 8. Test TIME_SLOTS definition
+console.log('Test 8: TIME_SLOTS definitions');
+assert.strictEqual(TIME_SLOTS.length, 3);
+// Morning: 6:40am - 7:30am
+assert.strictEqual(TIME_SLOTS[0].name, 'Morning');
+assert.strictEqual(TIME_SLOTS[0].start, '06:40');
+assert.strictEqual(TIME_SLOTS[0].end, '07:30');
+assert.strictEqual(TIME_SLOTS[0].startMin, 400);
+assert.strictEqual(TIME_SLOTS[0].endMin, 450);
+
+// Afternoon: 5:00pm - 6:30pm
+assert.strictEqual(TIME_SLOTS[1].name, 'Afternoon');
+assert.strictEqual(TIME_SLOTS[1].start, '17:00');
+assert.strictEqual(TIME_SLOTS[1].end, '18:30');
+assert.strictEqual(TIME_SLOTS[1].startMin, 1020);
+assert.strictEqual(TIME_SLOTS[1].endMin, 1110);
+
+// Evening: 8:15pm - 8:50pm
+assert.strictEqual(TIME_SLOTS[2].name, 'Evening');
+assert.strictEqual(TIME_SLOTS[2].start, '20:15');
+assert.strictEqual(TIME_SLOTS[2].end, '20:50');
+assert.strictEqual(TIME_SLOTS[2].startMin, 1215);
+assert.strictEqual(TIME_SLOTS[2].endMin, 1250);
+console.log('   ✅ TIME_SLOTS definitions passed\n');
+
+// 9. Test getDaySchedule & Pseudo-Random Slot Determination
+console.log('Test 9: getDaySchedule across dates');
+const testDays = ['2026-11-01', '2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05'];
+const seenSlots = new Set();
+for (const day of testDays) {
+    const sched = getDaySchedule(day);
+    seenSlots.add(sched.slot.name);
+    // Verify target time falls within slot bounds
+    const [h, m, s] = sched.targetTimeStr.split(':').map(Number);
+    const targetMin = h * 60 + m;
+    assert(targetMin >= sched.slot.startMin, `Target ${targetMin} < ${sched.slot.startMin}`);
+    assert(targetMin <= sched.slot.endMin, `Target ${targetMin} > ${sched.slot.endMin}`);
+    assert(s >= 0 && s < 60, `Seconds out of bounds: ${s}`);
 }
+assert(seenSlots.size > 1, 'Expected different slots to be selected over 5 days');
+console.log('   ✅ getDaySchedule passed\n');
 
-const range = generateDateRange('2024-05-20', '2024-05-23');
-assert.deepStrictEqual(range, ['2024-05-20', '2024-05-21', '2024-05-22', '2024-05-23']);
-console.log('   ✅ Date range generation passed\n');
+// 10. Test getCurrentSlot
+console.log('Test 10: getCurrentSlot detection');
+// 06:45 -> Morning
+assert.strictEqual(getCurrentSlot(6 * 60 + 45)?.name, 'Morning');
+// 07:30 -> Morning (edge)
+assert.strictEqual(getCurrentSlot(7 * 60 + 30)?.name, 'Morning');
+// 08:00 -> null (outside)
+assert.strictEqual(getCurrentSlot(8 * 60), null);
+// 17:15 -> Afternoon
+assert.strictEqual(getCurrentSlot(17 * 60 + 15)?.name, 'Afternoon');
+// 20:30 -> Evening
+assert.strictEqual(getCurrentSlot(20 * 60 + 30)?.name, 'Evening');
+// 22:00 -> null (outside)
+assert.strictEqual(getCurrentSlot(22 * 60), null);
+console.log('   ✅ getCurrentSlot passed\n');
 
-console.log('🎉 All 6 test suites passed successfully!\n');
+console.log('🎉 All 10 test suites passed successfully!\n');

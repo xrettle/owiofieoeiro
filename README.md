@@ -1,6 +1,6 @@
 # Duolingo Streak Keeper & XP Automation
 
-Never lose your streak again! This repository automatically completes daily practice lessons on Duolingo using GitHub Actions or locally from your machine, and includes a **Streak Reviver** tool to automatically backfill missed calendar days.
+Never lose your streak again! This repository automatically completes daily practice lessons on Duolingo using GitHub Actions or locally from your machine, complete with **intelligent human-like randomized timing** and a **Streak Reviver** tool to automatically backfill missed calendar days.
 
 ---
 
@@ -34,19 +34,38 @@ You only need **one** secret: your **Duolingo Auth Token**. The script automatic
 
 ---
 
+### Intelligent Randomized Streak Keeper
+
+Instead of running at the exact same fixed minute every day (which can easily be flagged as an automated bot), the Streak Keeper operates like a real human:
+
+#### Active Time Slots
+Each day, the scheduler randomly chooses **one** of three realistic daily active windows, and within that window, chooses a **random minute & second**:
+
+1. **Morning Slot:** `6:40 AM – 7:30 AM`
+2. **Afternoon Slot:** `5:00 PM – 6:30 PM`
+3. **Evening Slot:** `8:15 PM – 8:50 PM`
+
+#### How It Works:
+- **Randomized Timing:** Every day gets a completely different time slot and a different minute.
+- **Smart Skip:** If you already practiced on your phone earlier in the day, the script detects it from Duolingo and exits cleanly without running an extra lesson.
+- **Failsafe Streak Guarantee:** If an earlier scheduled slot was missed (e.g. temporary GitHub Actions outage), the final evening slot detects that today's lesson is still incomplete and runs as a failsafe to guarantee your streak is never lost.
+- **Timezone Support:** Defaults to `America/Los_Angeles` (Pacific Time). You can customize this by setting a repository variable `TIMEZONE` (e.g. `America/New_York` or `Europe/London`).
+
+---
+
 ### Available Workflows
 
 Once your `TOKEN` secret is added, go to the **Actions** tab on your GitHub repository:
 
 | Workflow | Schedule / Trigger | Purpose |
 | :--- | :--- | :--- |
-| **Duolingo Streak Keeper** | Automatic daily (23:18 UTC) & Manual | Completes 1 lesson to protect and increment your streak. |
+| **Duolingo Streak Keeper** | Automated across daily random slots | Completes 1 lesson at a random time within your active time slots. |
 | **Duolingo Streak Reviver (Backfill)** | Manual (`Run workflow`) | Iterates day-by-day to complete backdated practice lessons for missed dates. |
 | **Duolingo XP Farm** | Manual (`Run workflow`) | Earns XP by completing multiple practice lessons (customizable amount). |
 | **Duolingo Periodic Practice** | Every 45 minutes & Manual | Regularly runs practice sessions throughout the day. |
 | **Duolingo Unlimited Hearts** | Manual (`Run workflow`) | Attempts to enable classroom mode for unlimited hearts. |
 
-To test immediately, go to **Actions** > **Duolingo Streak Keeper** > **Run workflow**.
+To test immediately, go to **Actions** > **Duolingo Streak Keeper** > **Run workflow** (default mode `immediate` runs right away).
 
 ---
 
@@ -82,13 +101,16 @@ DAYS_BACK=14 TOKEN="your_jwt_token_here" npm run revive
 # 1. Install dependencies
 npm install
 
-# 2. Run the daily streak keeper / XP script
-TOKEN="your_jwt_token_here" npm run xp
+# 2. Inspect today's scheduled slot and status (dry-run):
+TOKEN="your_jwt_token_here" MODE=check npm run streak
 
-# 3. Complete multiple lessons
+# 3. Run the streak keeper immediately:
+TOKEN="your_jwt_token_here" MODE=immediate npm run streak
+
+# 4. Farm XP (complete multiple lessons):
 lessonsToComplete=5 TOKEN="your_jwt_token_here" npm run xp
 
-# 4. Attempt unlimited hearts
+# 5. Attempt unlimited hearts:
 TOKEN="your_jwt_token_here" npm run unlimitedhearts
 ```
 

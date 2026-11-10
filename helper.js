@@ -137,6 +137,77 @@ function getHeaders(token) {
 }
 
 /**
+ * Extracts normalized local date and time parts for a given Date and IANA TimeZone
+ */
+function getLocalTimeInfo(date = new Date(), timeZone = 'America/Los_Angeles') {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+    const parts = formatter.formatToParts(date);
+    const map = {};
+    parts.forEach(p => map[p.type] = p.value);
+
+    let hour = parseInt(map.hour, 10);
+    if (hour === 24) hour = 0;
+    const minute = parseInt(map.minute, 10);
+    const second = parseInt(map.second, 10);
+    const dateStr = `${map.year}-${map.month}-${map.day}`;
+    const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
+    const totalMinutes = hour * 60 + minute;
+    const totalSeconds = totalMinutes * 60 + second;
+
+    return { dateStr, timeStr, hour, minute, second, totalMinutes, totalSeconds };
+}
+
+/**
+ * Checks if the user has already completed today's practice on Duolingo
+ */
+function hasPracticedToday(userInfo, targetDateStr, timeZone = 'America/Los_Angeles') {
+    if (!userInfo) return false;
+
+    // 1. Check streakData.currentStreak.endDate
+    const currentStreak = userInfo.streakData?.currentStreak;
+    if (currentStreak && currentStreak.endDate) {
+        if (currentStreak.endDate === targetDateStr) {
+            return true;
+        }
+    }
+
+    // 2. Check streakData.updatedTimestamp
+    const updatedTs = userInfo.streakData?.updatedTimestamp;
+    if (updatedTs) {
+        const ms = updatedTs < 1e11 ? updatedTs * 1000 : updatedTs;
+        const updatedDate = new Date(ms);
+        const updatedLocalStr = getLocalTimeInfo(updatedDate, timeZone).dateStr;
+        if (updatedLocalStr === targetDateStr) {
+            return true;
+        }
+    }
+
+    // 3. Check xpGains
+    if (Array.isArray(userInfo.xpGains) && userInfo.xpGains.length > 0) {
+        const latest = userInfo.xpGains[userInfo.xpGains.length - 1];
+        if (latest && latest.time) {
+            const ms = latest.time < 1e11 ? latest.time * 1000 : latest.time;
+            const gainDate = new Date(ms);
+            const gainLocalStr = getLocalTimeInfo(gainDate, timeZone).dateStr;
+            if (gainLocalStr === targetDateStr) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
  * Fetches user languages, streak, and profile data from Duolingo API
  */
 async function getUserLanguages(customToken, customUserId) {
@@ -222,19 +293,19 @@ async function getUserLanguages(customToken, customUserId) {
 
     // Fetch streakData separately with subfields so it never blocks profile loading
     let streakData = data.streakData || null;
-    if (!streakData) {
-        try {
-            const sdRes = await fetch(`https://www.duolingo.com/2017-06-30/users/${userId}?fields=streakData{currentStreak,previousStreak}`, {
-                headers,
-                method: "GET"
-            });
-            if (sdRes.ok) {
-                const sdJson = await sdRes.json();
-                streakData = sdJson.streakData || null;
-            }
-        } catch {
-            // Optional metadata
+    let xpGains = data.xpGains || null;
+    try {
+        const sdRes = await fetch(`https://www.duolingo.com/2017-06-30/users/${userId}?fields=streakData{currentStreak,previousStreak,updatedTimestamp},xpGains`, {
+            headers,
+            method: "GET"
+        });
+        if (sdRes.ok) {
+            const sdJson = await sdRes.json();
+            if (sdJson.streakData) streakData = sdJson.streakData;
+            if (sdJson.xpGains) xpGains = sdJson.xpGains;
         }
+    } catch {
+        // Optional metadata
     }
 
     return {
@@ -242,6 +313,7 @@ async function getUserLanguages(customToken, customUserId) {
         learningLanguage,
         streak,
         streakData,
+        xpGains,
         username: data.username || data.name || userId,
         userId
     };
@@ -364,6 +436,8 @@ module.exports = {
     getUserIdFromToken,
     getCredentials,
     getHeaders,
+    getLocalTimeInfo,
+    hasPracticedToday,
     getUserLanguages,
     createPracticeSession,
     submitPracticeSession,

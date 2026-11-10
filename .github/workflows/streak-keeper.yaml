@@ -3,11 +3,29 @@ run-name: 'Keep Duolingo Streak'
 
 on:
   schedule:
-    - cron: '18 23 * * *'
+    # Slot 1: Morning 06:40 AM (PDT: 13:40 UTC, PST: 14:40 UTC)
+    - cron: '40 13 * * *'
+    - cron: '40 14 * * *'
+    # Slot 2: Afternoon 05:00 PM (PDT: 00:00 UTC, PST: 01:00 UTC)
+    - cron: '0 0 * * *'
+    - cron: '0 1 * * *'
+    # Slot 3: Evening 08:15 PM (PDT: 03:15 UTC, PST: 04:15 UTC)
+    - cron: '15 3 * * *'
+    - cron: '15 4 * * *'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Execution mode'
+        required: false
+        default: 'immediate'
+        type: choice
+        options:
+          - immediate
+          - random
+          - check
 
 jobs:
-  run-script:
+  run-streak-keeper:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +41,9 @@ jobs:
         run: npm install
 
       - name: Run Streak Keeper
-        run: node xp.js
+        run: node streak-keeper.js
         env:
-          lessonsToComplete: 1
+          MODE: ${{ github.event.inputs.mode }}
+          TIMEZONE: ${{ vars.TIMEZONE || 'America/Los_Angeles' }}
           TOKEN: ${{ secrets.TOKEN }}
           USER_ID: ${{ secrets.USER_ID }}
