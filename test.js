@@ -15,6 +15,7 @@ const {
     hasPracticedToday,
     LEAGUE_NAMES,
     parseLeaderboardData,
+    isGemReward,
     removeQuotes
 } = require('./helper.js');
 
@@ -349,7 +350,7 @@ assert(rewardId.startsWith('SKILL_COMPLETION_BALANCED-'));
 assert(rewardId.endsWith('-2-GEMS'));
 console.log('   Gems reward ID & batch math passed\n');
 
-// 18. Test Inventory, Gems & Reward Bundles Parsing
+// 18. Test Inventory, Gems & Reward Bundles Parsing (strictly gem filtering)
 console.log('Test 18: Inventory, Gems & Reward Bundles parsing logic');
 const mockProfile = {
     username: 'duofan',
@@ -364,14 +365,18 @@ const mockProfile = {
     fromLanguage: 'en',
     learningLanguage: 'de',
     rewards: [
-        { id: 'REWARD_1', consumed: false, type: 'CHEST' },
+        { id: 'DAILY_GOAL-1-GEMS', consumed: false, type: 'CHEST', currency: 'GEMS', amount: 5 },
+        { id: 'AVATAR_SKIN-avatar_skin_hot_dog', consumed: false, type: 'AVATAR_SKIN' },
+        { id: 'DAILY_QUEST_FIRST-STREAK_FREEZE', consumed: false, type: 'STREAK_FREEZE' },
+        { id: 'DAILY_QUEST_FIRST-XP_BOOST', consumed: false, type: 'XP_BOOST' },
         { id: 'REWARD_2', consumed: true, type: 'XP' }
     ],
     rewardBundles: [
         {
             rewards: [
-                { id: 'REWARD_1', consumed: false, type: 'CHEST' }, // Duplicate ID, should be deduplicated
-                { id: 'REWARD_BUNDLE_3', consumed: false, rewardType: 'QUEST_CHEST', amount: 20 }
+                { id: 'DAILY_GOAL-1-GEMS', consumed: false, type: 'CHEST', currency: 'GEMS' }, // Duplicate ID, should be deduplicated
+                { id: 'REWARD_BUNDLE_3-GEMS', consumed: false, rewardType: 'QUEST_CHEST', currency: 'GEMS', amount: 20 },
+                { id: 'TIERED_CHEST-SPEAKING_XP_CARD', consumed: false, rewardType: 'TIERED_CHEST' }
             ]
         }
     ],
@@ -380,6 +385,16 @@ const mockProfile = {
         { name: 'Sage', tier: 2, claimedTier: 2 }
     ]
 };
+
+// Test isGemReward explicitly
+assert.strictEqual(isGemReward({ id: 'DAILY_GOAL-1-GEMS', currency: 'GEMS' }), true);
+assert.strictEqual(isGemReward({ id: 'WECHAT_SERVICE_ACCOUNT-c56d-CURRENCY_BUNDLE-GEMS', type: 'CHEST' }), true);
+assert.strictEqual(isGemReward({ id: 'PERFECT_STREAK_JACKPOT-winners_20-GEMS', amount: 100 }), true);
+assert.strictEqual(isGemReward({ id: 'avatar_skin_hot_dog', type: 'AVATAR_SKIN' }), false);
+assert.strictEqual(isGemReward({ id: 'DAILY_QUEST_FIRST-SECOND_STREAK_FREEZE' }), false);
+assert.strictEqual(isGemReward({ id: 'DAILY_QUEST_SECOND_TIERED_CHEST-DOUBLE_XP_BOOST' }), false);
+assert.strictEqual(isGemReward({ id: 'TIERED_CHEST-SPEAKING_XP_CARD' }), false);
+assert.strictEqual(isGemReward({ id: 'ADD_WIDGET_HEARTS-hearts_refill_3' }), false);
 
 const gems = typeof mockProfile.gems === 'number'
     ? mockProfile.gems
@@ -393,7 +408,7 @@ const pendingRewards = [];
 const seenRewardIds = new Set();
 function addTestReward(r) {
     if (!r || !r.id || seenRewardIds.has(r.id)) return;
-    if (!r.consumed) {
+    if (!r.consumed && isGemReward(r)) {
         seenRewardIds.add(r.id);
         pendingRewards.push(r);
     }
@@ -407,9 +422,10 @@ assert.strictEqual(gems, 3200); // Prioritizes top-level data.gems
 assert.strictEqual(regularFreezes, 2);
 assert.strictEqual(societyFreezes, 3);
 assert.strictEqual(totalFreezes, 5);
+// Only the 2 GEM rewards are included; skins, streak freezes, and XP boosts are filtered out!
 assert.strictEqual(pendingRewards.length, 2);
-assert.strictEqual(pendingRewards[0].id, 'REWARD_1');
-assert.strictEqual(pendingRewards[1].id, 'REWARD_BUNDLE_3');
+assert.strictEqual(pendingRewards[0].id, 'DAILY_GOAL-1-GEMS');
+assert.strictEqual(pendingRewards[1].id, 'REWARD_BUNDLE_3-GEMS');
 assert.strictEqual(unclaimedAchievements.length, 1);
 assert.strictEqual(unclaimedAchievements[0].name, 'Wildfire');
 console.log('   Inventory, Gems & Reward Bundles parsing passed\n');

@@ -685,6 +685,48 @@ async function getLeaderboardStatus(customToken, customUserId) {
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
+ * Determines whether a reward object is strictly a gem reward
+ * (filters out avatar skins, streak freezes, XP boosts, cosmetics, etc.)
+ */
+function isGemReward(r) {
+    if (!r || typeof r !== 'object') return false;
+    const id = String(r.id || r.rewardId || '');
+    const type = String(r.rewardType || r.type || '');
+    const currency = String(r.currency || '');
+
+    const lowerId = id.toLowerCase();
+    const lowerType = type.toLowerCase();
+
+    // Explicitly exclude non-gem items: avatar skins, freezes, XP boosts/cards, energy, hearts
+    if (
+        lowerType.includes('avatar') ||
+        lowerId.includes('avatar_skin') ||
+        lowerId.includes('world_cup') ||
+        lowerType.includes('skin') ||
+        lowerId.includes('streak_freeze') ||
+        lowerId.includes('xp_boost') ||
+        lowerId.includes('xp_card') ||
+        lowerId.includes('energy') ||
+        lowerId.includes('hearts_refill')
+    ) {
+        return false;
+    }
+
+    // Explicitly match gem currency
+    if (currency.toUpperCase() === 'GEMS' || currency.toUpperCase() === 'GEM' || currency.toUpperCase() === 'LINGOTS') {
+        return true;
+    }
+    if (lowerType.includes('gem') || lowerType === 'currency_bundle') {
+        return true;
+    }
+    if (lowerId.endsWith('-gems') || lowerId.includes('-gems-') || lowerId.includes('_gem')) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
  * Fetches user profile along with inventory, gemsConfig, and lingots
  */
 async function getUserInventoryAndGems(customToken, customUserId) {
@@ -739,13 +781,14 @@ async function getUserInventoryAndGems(customToken, customUserId) {
         if (!r || typeof r !== 'object') return;
         const id = r.id || r.rewardId;
         if (!id || seenRewardIds.has(id)) return;
-        if (!r.consumed) {
+        // Strictly filter to unconsumed GEM rewards, preserving non-gem items & chests
+        if (!r.consumed && isGemReward(r)) {
             seenRewardIds.add(id);
             pendingRewards.push({
                 id,
                 rewardType: r.rewardType || r.type || 'REWARD',
                 currency: r.currency || 'GEMS',
-                amount: r.amount || r.gemAmount || null,
+                amount: typeof r.amount === 'number' ? r.amount : (r.gemAmount || null),
                 ...r
             });
         }
@@ -983,6 +1026,7 @@ module.exports = {
     parseLeaderboardData,
     getLeaderboardStatus,
     getUserInventoryAndGems,
+    isGemReward,
     claimGemReward,
     claimAchievement,
     purchaseShopItem,

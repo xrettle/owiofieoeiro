@@ -4,6 +4,9 @@
  * Adds or claims gems on your Duolingo account by claiming pending reward
  * bundles, achievement tiers, free shop chests, and reward drops without
  * running practice lessons or altering account XP.
+ *
+ * Enforces precise target bounding: only claims enough rewards to satisfy
+ * the requested amount, preserving all remaining chests for in-app opening.
  */
 
 const {
@@ -23,7 +26,7 @@ const {
  * @returns {Promise<{ startingGems: number, endingGems: number, gemsAdded: number }>}
  */
 async function addGems(customAmount = 300) {
-    const targetGems = Math.max(30, parseInt(customAmount, 10) || 300);
+    const targetGems = Math.max(10, parseInt(customAmount, 10) || 300);
     const { token, userId } = getCredentials();
 
     if (!token) {
@@ -46,44 +49,69 @@ async function addGems(customAmount = 300) {
 
     const headers = getHeaders(token);
     let successfulClaims = 0;
+    let gemsGainedSoFar = 0;
     const languages = {
         fromLanguage: initialProfile.fromLanguage || 'en',
         learningLanguage: initialProfile.learningLanguage || 'es'
     };
 
-    // STEP 1: Claim unconsumed pending rewards & reward bundles (e.g. chests, quest drops)
-    if (initialProfile.pendingRewards && initialProfile.pendingRewards.length > 0) {
-        console.log(`[Step 1] Found ${initialProfile.pendingRewards.length} pending reward(s) on your account. Claiming...`);
-        for (const reward of initialProfile.pendingRewards) {
+    const gemRewards = initialProfile.pendingRewards || [];
+    const totalPendingGems = gemRewards.length;
+
+    // STEP 1: Claim unconsumed pending gem rewards only until targetGems is reached
+    if (totalPendingGems > 0) {
+        console.log(`[Step 1] Found ${totalPendingGems} pending gem reward(s) on your account.`);
+        console.log(`   Claiming only what is needed to reach +${targetGems} gems, preserving all other chests...`);
+
+        for (const reward of gemRewards) {
+            if (gemsGainedSoFar >= targetGems) {
+                console.log(`\n   Target reached (+${gemsGainedSoFar} >= +${targetGems} gems). Halting claims to preserve remaining chests.`);
+                break;
+            }
+
             try {
                 await claimGemReward(headers, userId, reward.id, languages);
                 successfulClaims++;
-                const desc = reward.rewardType || reward.type || 'reward';
-                const amountText = reward.amount ? ` (+${reward.amount} gems)` : '';
-                console.log(`   Claimed ${desc}: ${reward.id}${amountText}`);
-                await sleep(1000);
+
+                // Refresh profile to accurately monitor actual gems added
+                await sleep(800);
+                const freshProfile = await getUserInventoryAndGems(token, userId);
+                const actualAdded = Math.max(0, freshProfile.gems - startingGems);
+                gemsGainedSoFar = actualAdded;
+
+                const desc = reward.rewardType || reward.type || 'chest';
+                const rewardAmountStr = reward.amount ? ` (+${reward.amount} gems)` : '';
+                console.log(`   Claimed ${desc}: ${reward.id}${rewardAmountStr} [Current gain: +${gemsGainedSoFar}/+${targetGems} gems]`);
+
+                if (gemsGainedSoFar >= targetGems) {
+                    console.log(`\n   Target met (+${gemsGainedSoFar} gems added). Stopped claiming to keep all other chests intact.`);
+                    break;
+                }
             } catch (err) {
                 console.warn(`   Could not claim reward ${reward.id}: ${err.message}`);
             }
         }
     } else {
-        console.log(`[Step 1] No unconsumed reward chests currently waiting in inventory.`);
+        console.log(`[Step 1] No unconsumed gem reward chests currently waiting in inventory.`);
     }
 
     // Refresh balance after Step 1
     let currentProfile = await getUserInventoryAndGems(token, userId);
-    let gemsGainedSoFar = Math.max(0, currentProfile.gems - startingGems);
+    gemsGainedSoFar = Math.max(0, currentProfile.gems - startingGems);
 
-    // STEP 2: Claim any unclaimed achievement tier milestones
+    // STEP 2: Claim achievement tier milestones if still below target
     if (gemsGainedSoFar < targetGems && initialProfile.unclaimedAchievements && initialProfile.unclaimedAchievements.length > 0) {
         console.log(`\n[Step 2] Found ${initialProfile.unclaimedAchievements.length} unclaimed achievement tier(s). Claiming...`);
         for (const ach of initialProfile.unclaimedAchievements) {
+            if (gemsGainedSoFar >= targetGems) break;
             try {
                 const res = await claimAchievement(headers, userId, ach.name, languages);
                 if (res) {
                     successfulClaims++;
-                    console.log(`   Claimed achievement: ${ach.name} (Tier ${ach.tier})`);
-                    await sleep(1000);
+                    await sleep(800);
+                    const freshProfile = await getUserInventoryAndGems(token, userId);
+                    gemsGainedSoFar = Math.max(0, freshProfile.gems - startingGems);
+                    console.log(`   Claimed achievement: ${ach.name} (Tier ${ach.tier}) [Current gain: +${gemsGainedSoFar}/+${targetGems} gems]`);
                 }
             } catch (err) {
                 console.warn(`   Could not claim achievement ${ach.name}: ${err.message}`);
@@ -92,19 +120,22 @@ async function addGems(customAmount = 300) {
         currentProfile = await getUserInventoryAndGems(token, userId);
         gemsGainedSoFar = Math.max(0, currentProfile.gems - startingGems);
     } else if (gemsGainedSoFar < targetGems) {
-        console.log(`[Step 2] No unclaimed achievement tiers found.`);
+        console.log(`[Step 2] No unclaimed achievement tiers needed.`);
     }
 
-    // STEP 3: Check for eligible free shop chests (Early Bird, Night Owl, Daily Free Chest)
+    // STEP 3: Check for eligible free shop chests if still below target
     if (gemsGainedSoFar < targetGems) {
         console.log(`\n[Step 3] Checking for eligible free shop chests...`);
         const freeChestItems = ['free_chest', 'daily_chest', 'early_bird_chest', 'night_owl_chest'];
         for (const chestName of freeChestItems) {
+            if (gemsGainedSoFar >= targetGems) break;
             try {
                 await purchaseShopItem(headers, userId, chestName, languages, { isFree: true });
                 successfulClaims++;
-                console.log(`   Claimed free shop chest: ${chestName}`);
-                await sleep(1000);
+                await sleep(800);
+                const freshProfile = await getUserInventoryAndGems(token, userId);
+                gemsGainedSoFar = Math.max(0, freshProfile.gems - startingGems);
+                console.log(`   Claimed free shop chest: ${chestName} [Current gain: +${gemsGainedSoFar}/+${targetGems} gems]`);
             } catch {
                 // Not currently eligible or already claimed today
             }
@@ -113,7 +144,7 @@ async function addGems(customAmount = 300) {
         gemsGainedSoFar = Math.max(0, currentProfile.gems - startingGems);
     }
 
-    // STEP 4: Attempt direct balanced reward claims
+    // STEP 4: Attempt direct balanced reward claims if still below target
     if (gemsGainedSoFar < targetGems) {
         const remainingNeeded = targetGems - gemsGainedSoFar;
         const GEMS_PER_REWARD = 30;
@@ -122,6 +153,7 @@ async function addGems(customAmount = 300) {
         console.log(`\n[Step 4] Checking server for direct skill completion reward grants (${totalClaimsNeeded} checks)...`);
 
         for (let i = 0; i < totalClaimsNeeded; i++) {
+            if (gemsGainedSoFar >= targetGems) break;
             const claimNum = i + 1;
             const randomSeed = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
             const rewardId = `SKILL_COMPLETION_BALANCED-${randomSeed}-2-GEMS`;
@@ -146,9 +178,11 @@ async function addGems(customAmount = 300) {
     await sleep(1500);
 
     let endingGems = startingGems;
+    let preservedChestsCount = 0;
     try {
         const finalProfile = await getUserInventoryAndGems(token, userId);
         endingGems = finalProfile.gems;
+        preservedChestsCount = finalProfile.pendingRewards ? finalProfile.pendingRewards.length : 0;
     } catch {
         endingGems = startingGems + gemsGainedSoFar;
     }
@@ -157,11 +191,12 @@ async function addGems(customAmount = 300) {
 
     console.log(`\n====================================================`);
     console.log(`Gem Process Summary:`);
-    console.log(`   Successful Claims: ${successfulClaims}`);
-    console.log(`   Starting Balance:  ${startingGems} gems`);
-    console.log(`   Ending Balance:    ${endingGems} gems`);
-    console.log(`   Total Gems Gained: +${actualGemsGained} gems`);
-    console.log(`   XP Added:          +0 XP (unaltered)`);
+    console.log(`   Successful Claims:       ${successfulClaims}`);
+    console.log(`   Starting Balance:        ${startingGems} gems`);
+    console.log(`   Ending Balance:          ${endingGems} gems`);
+    console.log(`   Total Gems Gained:       +${actualGemsGained} gems (Target was: +${targetGems})`);
+    console.log(`   Chests Preserved in App: ${preservedChestsCount}`);
+    console.log(`   XP Added:                +0 XP (unaltered)`);
     console.log(`====================================================`);
 
     if (actualGemsGained === 0 && successfulClaims === 0) {
