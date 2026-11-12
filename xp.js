@@ -45,15 +45,15 @@ async function completeLessons(lessonsCount = 1, targetDateStr = '') {
     }
 
     const headers = getHeaders(token);
-    console.log('🔄 Fetching user profile from Duolingo...');
+    console.log('Fetching user profile from Duolingo...');
     const userInfo = await getUserLanguages();
-    console.log(`👤 User: ${userInfo.username} (ID: ${userInfo.userId})`);
-    console.log(`🔥 Current Streak: ${userInfo.streak} days`);
-    console.log(`📚 Active Course: Learning "${userInfo.learningLanguage}" from "${userInfo.fromLanguage}"`);
+    console.log(`User: ${userInfo.username} (ID: ${userInfo.userId})`);
+    console.log(`Current Streak: ${userInfo.streak} days`);
+    console.log(`Active Course: Learning "${userInfo.learningLanguage}" from "${userInfo.fromLanguage}"`);
     if (baseTargetTimestamp !== null) {
-        console.log(`📅 Target Date: ${targetDateStr.trim()} (adding XP to specified day)`);
+        console.log(`Target Date: ${targetDateStr.trim()} (adding XP to specified day)`);
     } else {
-        console.log(`📅 Target Date: Today`);
+        console.log(`Target Date: Today`);
     }
 
     let successfulLessons = 0;
@@ -61,13 +61,13 @@ async function completeLessons(lessonsCount = 1, targetDateStr = '') {
 
     for (let i = 0; i < lessonsToComplete; i++) {
         const formattedFraction = `${i + 1}/${lessonsToComplete}`;
-        console.log(`\n▶️ Starting lesson ${formattedFraction}...`);
+        console.log(`\nStarting lesson ${formattedFraction}...`);
 
         try {
             const session = await createPracticeSession(headers, userInfo);
             console.log(`   Session created (ID: ${session.id}, type: ${session.type || 'PRACTICE'})`);
 
-            // Wait 1.5 seconds to simulate realistic completion time
+            // Pause before submitting the lesson
             await sleep(1500);
 
             // Spread multiple lessons slightly across the target day so timestamps are distinct
@@ -79,23 +79,21 @@ async function completeLessons(lessonsCount = 1, targetDateStr = '') {
             const xpGain = rewards?.xpGain ?? rewards?.xp ?? rewards?.awardedXp ?? 15;
             totalXpEarned += (typeof xpGain === 'number' ? xpGain : 0);
 
-            console.log(`   Submitted session data - Server accepted!`);
-            console.log(`💪🏆🎉 Earned ${xpGain} XP for lesson ${formattedFraction}!`);
+            console.log(`   Submitted session data. Earned ${xpGain} XP for lesson ${formattedFraction}.`);
             successfulLessons++;
 
-            // Wait between lessons to prevent rate limiting
+            // Wait between lessons to avoid rate limits
             if (i < lessonsToComplete - 1) {
                 await sleep(2000);
             }
         } catch (lessonErr) {
-            console.error(`❌ Failed lesson ${formattedFraction}: ${lessonErr.message}`);
+            console.error(`Failed lesson ${formattedFraction}: ${lessonErr.message}`);
         }
     }
 
     console.log(`\n========================================`);
-    console.log(`🏁 Summary: ${successfulLessons}/${lessonsToComplete} lessons completed.`);
-    console.log(`✨ Total XP earned: ${totalXpEarned}`);
-    console.log(`🔥 Duolingo daily streak maintained!`);
+    console.log(`Summary: ${successfulLessons}/${lessonsToComplete} lessons completed.`);
+    console.log(`Total XP earned: ${totalXpEarned}`);
     console.log(`========================================`);
 
     if (successfulLessons === 0) {
@@ -113,7 +111,7 @@ if (require.main === module) {
     const lessonsRaw = process.env.lessonsToComplete || process.env.LESSONS || process.env.LESSONS_TO_COMPLETE || 1;
     const targetDateRaw = process.env.TARGET_DATE || process.env.targetDate || process.env.DATE || '';
     completeLessons(lessonsRaw, targetDateRaw).catch(err => {
-        console.error(`\n❌ Initialization error: ${err.message}`);
+        console.error(`\nError: ${err.message}`);
         process.exit(1);
     });
 }

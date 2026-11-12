@@ -1,7 +1,7 @@
 {
   "name": "duolingohack",
   "version": "2.3.0",
-  "description": "Keep your Duolingo streak alive with randomized timing, defend your league rank, add custom gems and streak freezes, and earn XP automatically.",
+  "description": "Scripts for Duolingo streaks, leagues, XP, gems, and streak freezes.",
   "main": "streak-keeper.js",
   "scripts": {
     "start": "node streak-keeper.js",

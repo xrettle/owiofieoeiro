@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       amount:
-        description: 'Amount of streak freezes to equip (default: 2)'
+        description: 'Number of streak freezes to add (default: 2)'
         required: false
         default: '2'
         type: string
@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Equip Streak Freezes
+      - name: Add streak freezes
         run: node streak-freeze.js
         env:
           FREEZES: ${{ github.event.inputs.amount || '2' }}

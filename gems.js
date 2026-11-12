@@ -1,8 +1,8 @@
 /**
- * Duolingo Gems Generator
+ * Duolingo Gems Script
  *
- * Adds a custom amount of Gems to your Duolingo account by claiming
- * balanced skill completion rewards in paced succession.
+ * Adds a custom number of gems to your Duolingo account by claiming
+ * skill completion rewards in sequence.
  */
 
 const {
@@ -28,16 +28,16 @@ async function addGems(customAmount = 300) {
     }
 
     console.log(`====================================================`);
-    console.log(`💎 Duolingo Gems Generator`);
+    console.log(`Duolingo Gems`);
     console.log(`====================================================`);
 
-    console.log(`🔄 Fetching user account profile & current gem balance...`);
+    console.log(`Fetching user profile and gem balance...`);
     const initialProfile = await getUserInventoryAndGems(token, userId);
     const startingGems = initialProfile.gems;
 
-    console.log(`👤 User: ${initialProfile.username} (ID: ${initialProfile.userId})`);
-    console.log(`💎 Current Balance: ${startingGems} Gems`);
-    console.log(`🎯 Target Gems to Add: +${targetGems} Gems`);
+    console.log(`User: ${initialProfile.username} (ID: ${initialProfile.userId})`);
+    console.log(`Current Balance: ${startingGems} Gems`);
+    console.log(`Target Gems to Add: +${targetGems} Gems`);
     console.log(`====================================================\n`);
 
     // Each balanced reward claim awards ~30 gems
@@ -53,7 +53,7 @@ async function addGems(customAmount = 300) {
         const randomSeed = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
         const rewardId = `SKILL_COMPLETION_BALANCED-${randomSeed}-2-GEMS`;
 
-        console.log(`▶️ Processing reward claim ${claimNum}/${totalClaimsNeeded}...`);
+        console.log(`Claiming reward ${claimNum}/${totalClaimsNeeded}...`);
 
         try {
             await claimGemReward(headers, userId, rewardId, {
@@ -63,21 +63,21 @@ async function addGems(customAmount = 300) {
 
             successfulClaims++;
             estimatedGemsGained += GEMS_PER_REWARD;
-            console.log(`   ✓ Server accepted claim! +${GEMS_PER_REWARD} 💎 (Progress: ~${estimatedGemsGained}/${targetGems} gems)`);
+            console.log(`   Accepted: +${GEMS_PER_REWARD} gems (${estimatedGemsGained}/${targetGems})`);
 
-            // Pacing pause between claims to avoid rate limiting
+            // Pause between claims to avoid rate limits
             if (i < totalClaimsNeeded - 1) {
                 await sleep(1200);
             }
         } catch (err) {
-            console.warn(`   ⚠️ Claim ${claimNum} failed: ${err.message}`);
+            console.warn(`   Warning: Claim ${claimNum} failed: ${err.message}`);
             // Brief backoff before next attempt
             await sleep(2000);
         }
     }
 
     // Refresh balance to check confirmed total
-    console.log(`\n🔄 Verifying updated gem balance from Duolingo...`);
+    console.log(`\nChecking updated gem balance...`);
     await sleep(1500);
 
     let endingGems = startingGems + estimatedGemsGained;
@@ -91,11 +91,11 @@ async function addGems(customAmount = 300) {
     const actualGemsGained = Math.max(0, endingGems - startingGems) || estimatedGemsGained;
 
     console.log(`\n====================================================`);
-    console.log(`🏁 Gem Addition Completed:`);
+    console.log(`Gem addition finished:`);
     console.log(`   Successful Claims: ${successfulClaims}/${totalClaimsNeeded}`);
-    console.log(`   Starting Balance:  ${startingGems} 💎`);
-    console.log(`   Ending Balance:    ${endingGems} 💎`);
-    console.log(`   Total Gems Gained: +${actualGemsGained} 💎`);
+    console.log(`   Starting Balance:  ${startingGems} gems`);
+    console.log(`   Ending Balance:    ${endingGems} gems`);
+    console.log(`   Total Gems Gained: +${actualGemsGained} gems`);
     console.log(`====================================================\n`);
 
     if (successfulClaims === 0) {
@@ -116,7 +116,7 @@ const main = async () => {
 
 if (require.main === module) {
     main().catch(err => {
-        console.error(`\n❌ Error during gem addition: ${err.message}`);
+        console.error(`\nError adding gems: ${err.message}`);
         process.exit(1);
     });
 }

@@ -1,21 +1,21 @@
 name: 'Duolingo League Checker'
-run-name: 'Check & Defend Duolingo League'
+run-name: 'Check Duolingo League'
 
 on:
   workflow_dispatch:
     inputs:
       target_rank:
-        description: 'Target rank to reach (default: 5th place)'
+        description: 'Target rank to reach (default: 5)'
         required: false
         default: '5'
         type: string
       max_lessons:
-        description: 'Maximum lessons safety cap per run'
+        description: 'Maximum lessons per run'
         required: false
         default: '25'
         type: string
       dry_run:
-        description: 'Dry run inspection only (do not complete lessons)'
+        description: 'Check standings without completing lessons'
         required: false
         default: false
         type: boolean

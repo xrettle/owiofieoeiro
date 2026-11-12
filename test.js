@@ -34,7 +34,7 @@ const {
     formatLeaderboardTable
 } = require('./league-checker.js');
 
-console.log('🧪 Starting test suite...\n');
+console.log('Starting test suite...\n');
 
 // 1. Test cleanString & removeQuotes
 console.log('Test 1: cleanString & removeQuotes');
@@ -45,7 +45,7 @@ assert.strictEqual(cleanString('plain_text'), 'plain_text');
 assert.strictEqual(cleanString(null), '');
 assert.strictEqual(cleanString(undefined), '');
 assert.strictEqual(removeQuotes('"legacy"'), 'legacy');
-console.log('   ✅ cleanString & removeQuotes passed\n');
+console.log('   cleanString & removeQuotes passed\n');
 
 // 2. Test cleanToken
 console.log('Test 2: cleanToken');
@@ -54,7 +54,7 @@ assert.strictEqual(cleanToken('Bearer ey99999'), 'ey99999');
 assert.strictEqual(cleanToken('bearer "ey88888"'), 'ey88888');
 assert.strictEqual(cleanToken('"ey77777"'), 'ey77777');
 assert.strictEqual(cleanToken('ey66666'), 'ey66666');
-console.log('   ✅ cleanToken passed\n');
+console.log('   cleanToken passed\n');
 
 // 3. Test getUserIdFromToken (JWT decoding)
 console.log('Test 3: getUserIdFromToken & inspectToken');
@@ -84,7 +84,7 @@ assert.strictEqual(expiredInfo.isExpired, true);
 assert.strictEqual(getUserIdFromToken('invalid.token'), null);
 assert.strictEqual(getUserIdFromToken(''), null);
 assert.strictEqual(inspectToken('').valid, false);
-console.log('   ✅ getUserIdFromToken & inspectToken passed\n');
+console.log('   getUserIdFromToken & inspectToken passed\n');
 
 // 4. Test getCredentials
 console.log('Test 4: getCredentials auto-resolution');
@@ -105,7 +105,7 @@ assert.strictEqual(creds.userId, '84920194'); // Sub from token overrides UUID!
 process.env.USER_ID = '12345678';
 creds = getCredentials();
 assert.strictEqual(creds.userId, '84920194'); // Sub from token is authoritative!
-console.log('   ✅ getCredentials passed\n');
+console.log('   getCredentials passed\n');
 
 // 5. Test getHeaders
 console.log('Test 5: getHeaders');
@@ -114,7 +114,7 @@ assert.strictEqual(headers['authorization'], `Bearer ${mockJwt}`);
 assert.strictEqual(headers['cookie'], `jwt_token=${mockJwt}`);
 assert.strictEqual(headers['accept'], 'application/json');
 assert.strictEqual(headers['referer'], 'https://www.duolingo.com/practice');
-console.log('   ✅ getHeaders passed\n');
+console.log('   getHeaders passed\n');
 
 // 6. Test Timezone & Local Time Info
 console.log('Test 6: getLocalTimeInfo');
@@ -124,7 +124,7 @@ assert.strictEqual(infoLA.dateStr, '2026-11-09');
 assert.strictEqual(infoLA.hour, 12);
 assert.strictEqual(infoLA.minute, 45);
 assert.strictEqual(infoLA.totalMinutes, 12 * 60 + 45);
-console.log('   ✅ getLocalTimeInfo passed\n');
+console.log('   getLocalTimeInfo passed\n');
 
 // 7. Test hasPracticedToday
 console.log('Test 7: hasPracticedToday');
@@ -135,7 +135,7 @@ assert.strictEqual(hasPracticedToday({ streakData: { updatedTimestamp: testDate.
 assert.strictEqual(hasPracticedToday({ xpGains: [{ time: testDate.getTime(), xp: 15 }] }, todayStr), true);
 assert.strictEqual(hasPracticedToday({}, todayStr), false);
 assert.strictEqual(hasPracticedToday(null, todayStr), false);
-console.log('   ✅ hasPracticedToday passed\n');
+console.log('   hasPracticedToday passed\n');
 
 // 8. Test TIME_SLOTS definition
 console.log('Test 8: TIME_SLOTS definitions');
@@ -160,7 +160,7 @@ assert.strictEqual(TIME_SLOTS[2].start, '20:15');
 assert.strictEqual(TIME_SLOTS[2].end, '20:50');
 assert.strictEqual(TIME_SLOTS[2].startMin, 1215);
 assert.strictEqual(TIME_SLOTS[2].endMin, 1250);
-console.log('   ✅ TIME_SLOTS definitions passed\n');
+console.log('   TIME_SLOTS definitions passed\n');
 
 // 9. Test getDaySchedule & Pseudo-Random Slot Determination
 console.log('Test 9: getDaySchedule across dates');
@@ -177,7 +177,7 @@ for (const day of testDays) {
     assert(s >= 0 && s < 60, `Seconds out of bounds: ${s}`);
 }
 assert(seenSlots.size > 1, 'Expected different slots to be selected over 5 days');
-console.log('   ✅ getDaySchedule passed\n');
+console.log('   getDaySchedule passed\n');
 
 // 10. Test getCurrentSlot
 console.log('Test 10: getCurrentSlot detection');
@@ -193,7 +193,7 @@ assert.strictEqual(getCurrentSlot(17 * 60 + 15)?.name, 'Afternoon');
 assert.strictEqual(getCurrentSlot(20 * 60 + 30)?.name, 'Evening');
 // 22:00 -> null (outside)
 assert.strictEqual(getCurrentSlot(22 * 60), null);
-console.log('   ✅ getCurrentSlot passed\n');
+console.log('   getCurrentSlot passed\n');
 
 // 11. Test LEAGUE_NAMES definitions
 console.log('Test 11: LEAGUE_NAMES definitions');
@@ -208,7 +208,7 @@ assert.strictEqual(LEAGUE_NAMES[6], 'Amethyst');
 assert.strictEqual(LEAGUE_NAMES[7], 'Pearl');
 assert.strictEqual(LEAGUE_NAMES[8], 'Obsidian');
 assert.strictEqual(LEAGUE_NAMES[9], 'Diamond');
-console.log('   ✅ LEAGUE_NAMES passed\n');
+console.log('   LEAGUE_NAMES passed\n');
 
 // 12. Test parseLeaderboardData & Demotion Zone Detection
 console.log('Test 12: parseLeaderboardData Demotion Zone detection');
@@ -264,7 +264,7 @@ assert.strictEqual(parsedDemoted.targetRank, 5);
 assert.strictEqual(parsedDemoted.fifthPlaceScore, 520);
 // 5th place has 520 XP, current user has 60 XP. Need 520 - 60 + 15 = 475 XP
 assert.strictEqual(parsedDemoted.xpNeededForFifth, 475);
-console.log('   ✅ Demotion Zone detection & 5th place math passed\n');
+console.log('   Demotion Zone detection & 5th place math passed\n');
 
 // 13. Test parseLeaderboardData Safe & Promotion Zones
 console.log('Test 13: parseLeaderboardData Safe & Promotion Zones');
@@ -281,7 +281,7 @@ assert.strictEqual(parsedPromo.currentRank, 3);
 assert.strictEqual(parsedPromo.isInPromotionZone, true);
 assert.strictEqual(parsedPromo.isInDemotionZone, false);
 assert.strictEqual(parsedPromo.isSafe, true);
-console.log('   ✅ Safe & Promotion Zones passed\n');
+console.log('   Safe & Promotion Zones passed\n');
 
 // 14. Test parseLeaderboardData in Bronze League (Tier 0, No Demotion)
 console.log('Test 14: Bronze League (Tier 0) has NO demotion');
@@ -312,7 +312,7 @@ assert.strictEqual(parsedBronze.currentRank, 30); // 30th place
 assert.strictEqual(parsedBronze.isInDemotionZone, false); // Bronze NEVER demotes!
 assert.strictEqual(parsedBronze.demotedCount, 0);
 assert.strictEqual(parsedBronze.isSafe, true);
-console.log('   ✅ Bronze League (Tier 0) passed\n');
+console.log('   Bronze League (Tier 0) passed\n');
 
 // 15. Test getRandomDelay Range (1 to 2 minutes)
 console.log('Test 15: getRandomDelay range bounds (60s to 120s)');
@@ -321,7 +321,7 @@ for (let i = 0; i < 500; i++) {
     assert(delay >= 60000, `Delay ${delay} is below 60,000ms`);
     assert(delay <= 120000, `Delay ${delay} is above 120,000ms`);
 }
-console.log('   ✅ getRandomDelay passed across 500 random samples\n');
+console.log('   getRandomDelay passed across 500 random samples\n');
 
 // 16. Test formatLeaderboardTable output
 console.log('Test 16: formatLeaderboardTable generation');
@@ -330,7 +330,7 @@ assert(tableStr.includes('User_1'), 'Table should include 1st place');
 assert(tableStr.includes('User_5'), 'Table should include 5th place target');
 assert(tableStr.includes('(YOU)'), 'Table should highlight current user');
 assert(tableStr.includes('DEMOTION'), 'Table should mark demotion zone');
-console.log('   ✅ formatLeaderboardTable passed\n');
+console.log('   formatLeaderboardTable passed\n');
 
 // 17. Test Gems reward ID generator and batch math
 console.log('Test 17: Gems reward ID & batch math');
@@ -346,7 +346,7 @@ const seed = 'testseed123';
 const rewardId = `SKILL_COMPLETION_BALANCED-${seed}-2-GEMS`;
 assert(rewardId.startsWith('SKILL_COMPLETION_BALANCED-'));
 assert(rewardId.endsWith('-2-GEMS'));
-console.log('   ✅ Gems reward ID & batch math passed\n');
+console.log('   Gems reward ID & batch math passed\n');
 
 // 18. Test Inventory & Freeze Parsing
 console.log('Test 18: Inventory & Streak Freeze parsing logic');
@@ -372,7 +372,7 @@ assert.strictEqual(gems, 2450);
 assert.strictEqual(regularFreezes, 2);
 assert.strictEqual(societyFreezes, 3);
 assert.strictEqual(totalFreezes, 5);
-console.log('   ✅ Inventory & Freeze parsing passed\n');
+console.log('   Inventory & Freeze parsing passed\n');
 
 // 19. Test Streak Freeze Shop Item payload structure
 console.log('Test 19: Streak Freeze shop item payload structure');
@@ -386,7 +386,7 @@ const shopPayload = {
 assert.strictEqual(shopPayload.itemName, 'streak_freeze');
 assert.strictEqual(shopPayload.isFree, true);
 assert.strictEqual(shopPayload.consumed, true);
-console.log('   ✅ Streak Freeze payload structure passed\n');
+console.log('   Streak Freeze payload structure passed\n');
 
 // 20. Test parseDateUtc & resolveTargetTimestamp for XP Farm date option
 console.log('Test 20: parseDateUtc & resolveTargetTimestamp');
@@ -404,6 +404,6 @@ assert.strictEqual(parseDateUtc('2026-02-30'), null);
 assert.strictEqual(parseDateUtc('not-a-date'), null);
 assert.throws(() => resolveTargetTimestamp('2026-02-30'), /Invalid target date/);
 assert.throws(() => resolveTargetTimestamp('invalid'), /Invalid target date/);
-console.log('   ✅ parseDateUtc & resolveTargetTimestamp passed\n');
+console.log('   parseDateUtc & resolveTargetTimestamp passed\n');
 
-console.log('🎉 All 20 test suites passed successfully!\n');
+console.log('All 20 test suites passed.\n');

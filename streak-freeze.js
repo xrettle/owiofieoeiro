@@ -1,8 +1,7 @@
 /**
- * Duolingo Streak Freeze Equipper & Refill
+ * Duolingo Streak Freeze Script
  *
- * Equips custom amounts of Streak Freezes onto your Duolingo account
- * so your streak stays protected if you miss days.
+ * Adds a custom number of streak freezes to your Duolingo account.
  */
 
 const {
@@ -28,17 +27,17 @@ async function addStreakFreezes(customCount = 2) {
     }
 
     console.log(`====================================================`);
-    console.log(`❄️ Duolingo Streak Freeze Equipper`);
+    console.log(`Duolingo Streak Freezes`);
     console.log(`====================================================`);
 
-    console.log(`🔄 Inspecting user inventory and active freeze protection...`);
+    console.log(`Checking inventory and current freezes...`);
     const initial = await getUserInventoryAndGems(token, userId);
     const startingFreezes = initial.totalFreezes;
 
-    console.log(`👤 User: ${initial.username} (ID: ${initial.userId})`);
-    console.log(`🔥 Current Streak: ${initial.streak} days`);
-    console.log(`❄️ Current Equipped Freezes: ${startingFreezes} (${initial.regularFreezes} standard, ${initial.societyFreezes} society)`);
-    console.log(`🎯 Requested Freezes to Add: ${targetCount}`);
+    console.log(`User: ${initial.username} (ID: ${initial.userId})`);
+    console.log(`Current Streak: ${initial.streak} days`);
+    console.log(`Equipped Freezes: ${startingFreezes} (${initial.regularFreezes} standard, ${initial.societyFreezes} society)`);
+    console.log(`Requested Freezes to Add: ${targetCount}`);
     console.log(`====================================================\n`);
 
     const headers = getHeaders(token);
@@ -56,7 +55,7 @@ async function addStreakFreezes(customCount = 2) {
         let success = false;
         let lastError = null;
 
-        console.log(`▶️ Equipping streak freeze ${itemNum}/${targetCount}...`);
+        console.log(`Adding streak freeze ${itemNum}/${targetCount}...`);
 
         for (const itemName of itemCandidates) {
             try {
@@ -67,7 +66,7 @@ async function addStreakFreezes(customCount = 2) {
 
                 success = true;
                 acquiredCount++;
-                console.log(`   ✓ Successfully equipped freeze via '${itemName}'!`);
+                console.log(`   Added freeze using '${itemName}'`);
                 break;
             } catch (err) {
                 lastError = err;
@@ -81,13 +80,13 @@ async function addStreakFreezes(customCount = 2) {
         }
 
         if (hitCapacityLimit) {
-            console.log(`\nℹ️ Maximum freeze capacity reached for this account tier.`);
-            console.log(`   (Standard accounts can hold up to 2 freezes; Streak Society holds up to 5).`);
+            console.log(`\nNote: Account freeze limit reached.`);
+            console.log(`   (Standard accounts hold up to 2 freezes; Streak Society holds up to 5.)`);
             break;
         }
 
         if (!success && lastError) {
-            console.warn(`   ⚠️ Could not acquire freeze ${itemNum}: ${lastError.message}`);
+            console.warn(`   Warning: Could not add freeze ${itemNum}: ${lastError.message}`);
         }
 
         if (i < targetCount - 1 && !hitCapacityLimit) {
@@ -96,7 +95,7 @@ async function addStreakFreezes(customCount = 2) {
     }
 
     // Refresh inventory to verify confirmed equipped count
-    console.log(`\n🔄 Verifying updated inventory from Duolingo...`);
+    console.log(`\nChecking updated inventory...`);
     await sleep(1200);
 
     let endingFreezes = startingFreezes + acquiredCount;
@@ -111,12 +110,12 @@ async function addStreakFreezes(customCount = 2) {
     const actualGained = Math.max(0, endingFreezes - startingFreezes) || acquiredCount;
 
     console.log(`\n====================================================`);
-    console.log(`🏁 Streak Freeze Operation Completed:`);
-    console.log(`   Starting Freezes:  ${startingFreezes} ❄️`);
-    console.log(`   Ending Freezes:    ${endingFreezes} ❄️`);
-    console.log(`   Freezes Acquired:  +${actualGained} ❄️`);
+    console.log(`Streak freeze run finished:`);
+    console.log(`   Starting Freezes:  ${startingFreezes}`);
+    console.log(`   Ending Freezes:    ${endingFreezes}`);
+    console.log(`   Freezes Added:     +${actualGained}`);
     if (endingFreezes > 0) {
-        console.log(`🛡️ Your streak is now safely protected for up to ${endingFreezes} missed day(s)!`);
+        console.log(`Your streak has ${endingFreezes} freeze(s) ready for missed days.`);
     }
     console.log(`====================================================\n`);
 
@@ -134,7 +133,7 @@ const main = async () => {
 
 if (require.main === module) {
     main().catch(err => {
-        console.error(`\n❌ Error during streak freeze addition: ${err.message}`);
+        console.error(`\nError adding streak freezes: ${err.message}`);
         process.exit(1);
     });
 }

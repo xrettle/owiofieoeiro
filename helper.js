@@ -258,17 +258,16 @@ async function getUserLanguages(customToken, customUserId) {
         const expiredStr = tokenInfo.expiredDate ? tokenInfo.expiredDate.toUTCString() : 'in the past';
         throw new Error(
             `\n============================================================\n` +
-            `❌ YOUR DUOLINGO AUTH TOKEN HAS EXPIRED!\n` +
-            `📅 Token expiration date: ${expiredStr}\n\n` +
-            `Duolingo JWT tokens expire every few months and cannot be used once expired.\n` +
-            `Duolingo rejects expired tokens with HTTP 401 Unauthorized.\n\n` +
-            `👉 TO FIX THIS (takes 30 seconds):\n` +
-            `1. Open https://www.duolingo.com in your web browser and ensure you are logged in.\n` +
-            `2. Press F12 (or Cmd+Option+J on Mac) to open Developer Tools -> Console.\n` +
+            `YOUR DUOLINGO AUTH TOKEN HAS EXPIRED.\n` +
+            `Token expiration date: ${expiredStr}\n\n` +
+            `Duolingo JWT tokens expire every few months and return HTTP 401 once expired.\n\n` +
+            `How to fix this:\n` +
+            `1. Open https://www.duolingo.com in your browser and make sure you are logged in.\n` +
+            `2. Open Developer Tools Console (F12 or Cmd+Option+J on Mac).\n` +
             `3. Run this command:\n` +
             `   document.cookie.split('; ').find(row => row.startsWith('jwt_token='))?.split('=')[1];\n` +
             `4. Copy the output string.\n` +
-            `5. In your GitHub repo: Settings > Secrets and variables > Actions > edit 'TOKEN' and paste the fresh token.\n` +
+            `5. In your GitHub repo: Settings > Secrets and variables > Actions > update 'TOKEN'.\n` +
             `============================================================`
         );
     }
@@ -292,9 +291,9 @@ async function getUserLanguages(customToken, customUserId) {
             throw new Error(
                 `Duolingo Authentication Failed (HTTP 401 Unauthorized).\n` +
                 `Duolingo rejected your TOKEN as invalid, expired, or revoked.\n\n` +
-                `👉 TO FIX THIS (takes 30 seconds):\n` +
+                `How to fix this:\n` +
                 `1. Open https://www.duolingo.com in your browser and log in.\n` +
-                `2. Press F12 (or Cmd+Option+J on Mac) -> Console, and run:\n` +
+                `2. Open Developer Tools Console (F12 or Cmd+Option+J on Mac) and run:\n` +
                 `   document.cookie.split('; ').find(row => row.startsWith('jwt_token='))?.split('=')[1];\n` +
                 `3. Copy the token string (without quotes).\n` +
                 `4. Go to GitHub repo Settings > Secrets and variables > Actions > update 'TOKEN'.`

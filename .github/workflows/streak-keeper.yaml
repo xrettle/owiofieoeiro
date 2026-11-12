@@ -24,7 +24,7 @@ on:
           - random
           - check
       league_checker:
-        description: 'Enable League Checker (defends from demotion zone)'
+        description: 'Run league checker to stay out of the demotion zone'
         required: false
         default: true
         type: boolean
@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Streak Keeper
+      - name: Run streak keeper
         run: node streak-keeper.js
         env:
           MODE: ${{ github.event.inputs.mode }}

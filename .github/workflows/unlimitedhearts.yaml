@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Unlimited Hearts Script
+      - name: Run unlimited hearts script
         run: node unlimitedhearts.js
         env:
           TOKEN: ${{ secrets.TOKEN }}

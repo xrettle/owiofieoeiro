@@ -1,8 +1,8 @@
 /**
- * Duolingo Historical Streak Reviver & Backfill Tool
+ * Duolingo Streak Reviver
  *
- * Simulates completing lessons backdated day-by-day to fill missed gaps
- * in your streak calendar from your previous streak up to the present.
+ * Submits backdated practice lessons day by day to fill missed days
+ * from a previous streak up to the target end date.
  */
 
 const {
@@ -45,25 +45,25 @@ const main = async () => {
     const { token, userId } = getCredentials();
 
     if (!token) {
-        console.error('❌ Error: Duolingo auth token (TOKEN) is required.');
+        console.error('Error: Duolingo auth token (TOKEN) is required.');
         process.exit(1);
     }
 
     const headers = getHeaders(token);
 
     try {
-        console.log('🔄 Fetching user profile and streak history from Duolingo...');
+        console.log('Fetching user profile and streak history...');
         const userInfo = await getUserLanguages();
-        console.log(`👤 User: ${userInfo.username} (ID: ${userInfo.userId})`);
-        console.log(`🔥 Current Streak: ${userInfo.streak} days`);
-        console.log(`📚 Active Course: Learning "${userInfo.learningLanguage}" from "${userInfo.fromLanguage}"`);
+        console.log(`User: ${userInfo.username} (ID: ${userInfo.userId})`);
+        console.log(`Current Streak: ${userInfo.streak} days`);
+        console.log(`Active Course: Learning "${userInfo.learningLanguage}" from "${userInfo.fromLanguage}"`);
 
         const streakData = userInfo.streakData || {};
         if (streakData.previousStreak) {
-            console.log(`📜 Previous Streak: ${streakData.previousStreak.length || 'N/A'} days (ended: ${streakData.previousStreak.endDate || 'unknown'})`);
+            console.log(`Previous Streak: ${streakData.previousStreak.length || 'N/A'} days (ended: ${streakData.previousStreak.endDate || 'unknown'})`);
         }
         if (streakData.currentStreak) {
-            console.log(`📈 Ongoing Streak: ${streakData.currentStreak.length || 'N/A'} days (started: ${streakData.currentStreak.startDate || 'unknown'})`);
+            console.log(`Ongoing Streak: ${streakData.currentStreak.length || 'N/A'} days (started: ${streakData.currentStreak.startDate || 'unknown'})`);
         }
 
         // Determine start and end dates
@@ -76,7 +76,7 @@ const main = async () => {
         if (process.env.START_DATE && process.env.START_DATE.trim()) {
             startDate = parseDateUtc(process.env.START_DATE);
             if (!startDate) {
-                console.error(`❌ Invalid START_DATE format: "${process.env.START_DATE}". Expected YYYY-MM-DD.`);
+                console.error(`Invalid START_DATE format: "${process.env.START_DATE}". Expected YYYY-MM-DD.`);
                 process.exit(1);
             }
         } else if (process.env.DAYS_BACK && process.env.DAYS_BACK.trim()) {
@@ -86,7 +86,7 @@ const main = async () => {
                 startDate.setUTCDate(startDate.getUTCDate() - daysBack);
             }
         } else if (streakData.previousStreak && streakData.previousStreak.endDate) {
-            console.log(`\n💡 Auto-detected gap: Starting from the day after your previous streak ended (${streakData.previousStreak.endDate}).`);
+            console.log(`\nStarting from the day after your previous streak ended (${streakData.previousStreak.endDate}).`);
             const prevEnd = parseDateUtc(streakData.previousStreak.endDate);
             if (prevEnd) {
                 startDate = new Date(prevEnd.getTime());
@@ -96,20 +96,20 @@ const main = async () => {
 
         // Fallback default: 7 days back if nothing specified
         if (!startDate) {
-            console.log('\n💡 No START_DATE or DAYS_BACK specified. Defaulting to the past 7 days.');
+            console.log('\nNo START_DATE or DAYS_BACK specified. Defaulting to the past 7 days.');
             console.log('   (To customize, set START_DATE=YYYY-MM-DD or DAYS_BACK=30)');
             startDate = new Date(endDate.getTime());
             startDate.setUTCDate(startDate.getUTCDate() - 7);
         }
 
         if (startDate > endDate) {
-            console.error(`❌ START_DATE (${formatDateUtc(startDate)}) cannot be after END_DATE (${formatDateUtc(endDate)}).`);
+            console.error(`START_DATE (${formatDateUtc(startDate)}) cannot be after END_DATE (${formatDateUtc(endDate)}).`);
             process.exit(1);
         }
 
         const dateList = generateDateRange(startDate, endDate);
-        console.log(`\n📅 Backfill Range: ${formatDateUtc(startDate)} to ${formatDateUtc(endDate)} (${dateList.length} total days)`);
-        console.log('🚀 Starting backfill loop...\n');
+        console.log(`\nBackfill Range: ${formatDateUtc(startDate)} to ${formatDateUtc(endDate)} (${dateList.length} total days)`);
+        console.log('Starting backfill...\n');
 
         let successfulDays = 0;
         let failedDays = 0;
@@ -135,38 +135,38 @@ const main = async () => {
                 const xpGain = rewards?.xpGain ?? rewards?.xp ?? rewards?.awardedXp ?? 15;
                 totalXp += (typeof xpGain === 'number' ? xpGain : 0);
 
-                console.log(`   ✅ Success! Completed lesson for ${dateStr} (+${xpGain} XP)`);
+                console.log(`   Completed lesson for ${dateStr} (+${xpGain} XP)`);
                 successfulDays++;
 
-                // Wait 1.5 seconds between requests to avoid rate limiting
+                // Wait 1.5 seconds between requests to avoid rate limits
                 if (i < dateList.length - 1) {
                     await sleep(1500);
                 }
             } catch (err) {
-                console.error(`   ❌ Failed for ${dateStr}: ${err.message}`);
+                console.error(`   Failed for ${dateStr}: ${err.message}`);
                 failedDays++;
             }
         }
 
         console.log('\n========================================');
-        console.log('🏁 Backfill Process Finished!');
-        console.log(`📅 Days attempted: ${dateList.length}`);
-        console.log(`✅ Successful days: ${successfulDays}`);
-        console.log(`❌ Failed days: ${failedDays}`);
-        console.log(`✨ Total XP earned: ${totalXp}`);
+        console.log('Backfill finished.');
+        console.log(`Days attempted: ${dateList.length}`);
+        console.log(`Successful days: ${successfulDays}`);
+        console.log(`Failed days: ${failedDays}`);
+        console.log(`Total XP earned: ${totalXp}`);
         console.log('========================================');
 
         // Check updated status
-        console.log('\n🔄 Checking updated profile data...');
+        console.log('\nChecking updated profile data...');
         try {
             const updated = await getUserLanguages();
-            console.log(`🔥 Updated Streak: ${updated.streak} days`);
+            console.log(`Updated Streak: ${updated.streak} days`);
         } catch (e) {
             // Ignore if refresh fails
         }
 
     } catch (err) {
-        console.error(`\n❌ Error during streak revival: ${err.message}`);
+        console.error(`\nError during streak revival: ${err.message}`);
         process.exit(1);
     }
 };

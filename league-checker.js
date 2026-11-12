@@ -1,10 +1,9 @@
 /**
- * Duolingo League Checker & Demotion Defense
+ * Duolingo League Checker
  *
- * Automatically monitors your Duolingo League tier, rank, promotion/demotion zone,
- * and competitors' XP. If you are in the demotion zone, it automatically grinds
- * lessons with realistic 1-2 minute randomized pauses until reaching at least
- * 5th place (keeping you safely between 1st and 9th place).
+ * Checks your Duolingo league tier, rank, promotion/demotion zone, and
+ * competitors' XP. If you are in the demotion zone, it runs practice lessons
+ * spaced 1-2 minutes apart until you reach at least 5th place.
  */
 
 const {
@@ -65,15 +64,15 @@ function formatLeaderboardTable(status) {
         const r = rankings[idx];
         const isUser = r.isCurrentUser;
         const rankStr = String(r.rank).padStart(3, ' ');
-        const nameRaw = (isUser ? `👉 ${r.displayName} (YOU)` : r.displayName).slice(0, 30);
+        const nameRaw = (isUser ? `${r.displayName} (YOU)` : r.displayName).slice(0, 30);
         const nameStr = nameRaw.padEnd(30, ' ');
         const scoreStr = String(r.score).padStart(6, ' ') + ' ';
 
         let zoneStr = 'Safe Zone';
         if (status.promotionCutoffRank && r.rank <= status.promotionCutoffRank) {
-            zoneStr = r.rank === 1 ? '🥇 1st Place' : (r.rank <= 3 ? '🏆 Top 3' : '🚀 Promotion');
+            zoneStr = r.rank === 1 ? '1st Place' : (r.rank <= 3 ? 'Top 3' : 'Promotion');
         } else if (status.demotionCutoffRank && r.rank >= status.demotionCutoffRank) {
-            zoneStr = '⚠️ DEMOTION';
+            zoneStr = 'DEMOTION';
         }
         if (r.rank === 5) {
             zoneStr += ' (Target)';
@@ -111,60 +110,60 @@ async function checkAndDefendLeague(options = {}) {
     }
 
     console.log(`\n====================================================`);
-    console.log(`🛡️ Duolingo League Checker & Demotion Defense`);
+    console.log(`Duolingo League Checker`);
     console.log(`====================================================`);
 
-    console.log(`🔄 Fetching active league data from Duolingo...`);
+    console.log(`Fetching league data from Duolingo...`);
     let status;
     try {
         status = await getLeaderboardStatus(token, userId);
     } catch (err) {
-        console.warn(`⚠️ Warning: Could not retrieve leaderboard data: ${err.message}`);
+        console.warn(`Warning: Could not fetch leaderboard data: ${err.message}`);
         return { checked: false, error: err.message };
     }
 
-    console.log(`🏆 League Tier: ${status.leagueName} (Tier ${status.tier})`);
+    console.log(`League Tier: ${status.leagueName} (Tier ${status.tier})`);
     if (status.streakInTier > 0) {
-        console.log(`🔥 Streak in Tier: ${status.streakInTier} weeks`);
+        console.log(`Streak in Tier: ${status.streakInTier} weeks`);
     }
     if (status.contestEnd) {
-        console.log(`⏳ Contest Ends: ${status.contestEnd.toUTCString()}`);
+        console.log(`Contest Ends: ${status.contestEnd.toUTCString()}`);
     }
 
     if (!status.hasActiveCohort) {
-        console.log(`\nℹ️ You are not currently placed in an active weekly cohort.`);
-        console.log(`   (Duolingo places you into a league cohort after completing your first lesson of the week).`);
+        console.log(`\nYou are not in an active weekly cohort yet.`);
+        console.log(`   (Duolingo places you into a cohort after your first lesson of the week.)`);
         console.log(`   League check complete.\n`);
         return { checked: true, defended: false, inCohort: false };
     }
 
-    console.log(`👥 Cohort Size: ${status.totalUsers} users`);
-    console.log(`👤 Your Current Rank: ${status.currentRank ? `#${status.currentRank}` : 'Unranked'} (${status.userScore} XP)`);
+    console.log(`Cohort Size: ${status.totalUsers} users`);
+    console.log(`Your Current Rank: ${status.currentRank ? `#${status.currentRank}` : 'Unranked'} (${status.userScore} XP)`);
 
     if (status.promotionCutoffRank) {
-        console.log(`🚀 Promotion Zone: Ranks 1 to ${status.promotionCutoffRank}`);
+        console.log(`Promotion Zone: Ranks 1 to ${status.promotionCutoffRank}`);
     }
     if (status.demotionCutoffRank) {
-        console.log(`⚠️ Demotion Zone:  Ranks ${status.demotionCutoffRank} to ${status.totalUsers}`);
+        console.log(`Demotion Zone:  Ranks ${status.demotionCutoffRank} to ${status.totalUsers}`);
     } else {
-        console.log(`🛡️ Demotion Zone:  None in this league tier (${status.leagueName})`);
+        console.log(`Demotion Zone:  None in this league tier (${status.leagueName})`);
     }
 
-    console.log(`\n📊 Standings Snapshot:`);
+    console.log(`\nStandings:`);
     console.log(formatLeaderboardTable(status));
 
     // Status evaluation
     if (status.isInPromotionZone) {
-        console.log(`\n🚀 Status: PROMOTION ZONE! Currently Rank #${status.currentRank}. Outstanding progress!`);
+        console.log(`\nStatus: PROMOTION ZONE (Rank #${status.currentRank})`);
     } else if (status.isSafe) {
-        console.log(`\n🛡️ Status: SAFE ZONE. Currently Rank #${status.currentRank} (Safe from demotion).`);
+        console.log(`\nStatus: SAFE ZONE (Rank #${status.currentRank})`);
     } else {
-        console.log(`\n🚨 Status: DEMOTION ZONE! Currently Rank #${status.currentRank} (Bottom ${status.demotedCount} users).`);
+        console.log(`\nStatus: DEMOTION ZONE (Rank #${status.currentRank}, bottom ${status.demotedCount} users)`);
     }
 
-    // If NOT in demotion zone, user is safe! No grinding needed.
+    // Stop here if user is out of the demotion zone
     if (!status.isInDemotionZone) {
-        console.log(`✅ No demotion danger detected. No additional practice lessons required.`);
+        console.log(`Not in demotion zone. No extra lessons needed.`);
         console.log(`====================================================\n`);
         return {
             checked: true,
@@ -175,15 +174,15 @@ async function checkAndDefendLeague(options = {}) {
         };
     }
 
-    // User IS in demotion zone! Grind until reaching at least 5th place
-    console.log(`\n⚠️ DEMOTION THREAT ACTIVE!`);
-    console.log(`🎯 Target Goal: Climb to at least ${targetRank}th place (staying safely between 1st and 9th place).`);
-    console.log(`🎯 5th Place Target Score: ${status.fifthPlaceScore} XP`);
-    console.log(`📈 Estimated XP Needed: ~${status.xpNeededForFifth} XP (~${Math.ceil(status.xpNeededForFifth / 15)} lessons)`);
-    console.log(`⏱️ Human-like pacing: 1 lesson every ${minDelaySec}-${maxDelaySec}s randomized delay.`);
+    // Run lessons until reaching target rank
+    console.log(`\nIn demotion zone.`);
+    console.log(`Target Rank: #${targetRank} or higher (staying between 1st and 9th place).`);
+    console.log(`5th Place Score: ${status.fifthPlaceScore} XP`);
+    console.log(`Estimated XP Needed: ~${status.xpNeededForFifth} XP (~${Math.ceil(status.xpNeededForFifth / 15)} lessons)`);
+    console.log(`Delay between lessons: ${minDelaySec}-${maxDelaySec}s.`);
 
     if (dryRun) {
-        console.log(`\n[Dry-Run] Dry-run complete. Exiting without grinding.`);
+        console.log(`\n[Dry-Run] Check complete. Exiting without running lessons.`);
         return { checked: true, defended: false, dryRun: true };
     }
 
@@ -197,13 +196,13 @@ async function checkAndDefendLeague(options = {}) {
 
     while (currentRank > targetRank && lessonsCompleted < maxLessons) {
         const lessonNum = lessonsCompleted + 1;
-        console.log(`\n▶️ [League Defense] Starting lesson ${lessonNum} (Current Rank: #${currentRank}, Score: ${currentScore} XP)...`);
+        console.log(`\n[League Checker] Starting lesson ${lessonNum} (Rank #${currentRank}, ${currentScore} XP)...`);
 
         try {
             const session = await createPracticeSession(headers, userInfo);
             console.log(`   Session created (ID: ${session.id})`);
 
-            // Simulate realistic completion duration
+            // Pause before submitting the lesson
             await sleep(1500);
 
             const rewards = await submitPracticeSession(headers, session);
@@ -212,34 +211,34 @@ async function checkAndDefendLeague(options = {}) {
             currentScore += xpGain;
             lessonsCompleted++;
 
-            console.log(`   Submitted session - Server accepted! Earned +${xpGain} XP! (Total earned: +${totalEarnedXp} XP)`);
+            console.log(`   Submitted session. Earned +${xpGain} XP (Total earned: +${totalEarnedXp} XP)`);
 
-            // Re-calculate estimated rank against cohort
+            // Recalculate estimated rank against cohort
             const competitorScores = status.rankings
                 .filter(r => !r.isCurrentUser)
                 .map(r => r.score);
             const estimatedRank = competitorScores.filter(s => s >= currentScore).length + 1;
 
-            console.log(`   📊 Estimated Rank: #${estimatedRank} (Score: ${currentScore} XP) | 5th Place: ${status.fifthPlaceScore} XP`);
+            console.log(`   Estimated Rank: #${estimatedRank} (${currentScore} XP) | 5th Place: ${status.fifthPlaceScore} XP`);
 
-            // Refresh live leaderboard data occasionally or when target is reached
+            // Refresh live leaderboard data when target rank is reached
             if (estimatedRank <= targetRank) {
-                console.log(`\n🎉 Estimated rank reached #${estimatedRank} (at least ${targetRank}th place)!`);
+                console.log(`\nEstimated rank reached #${estimatedRank} (target: #${targetRank} or higher).`);
                 try {
                     const freshStatus = await getLeaderboardStatus(token, userId);
                     if (freshStatus.hasActiveCohort) {
                         currentRank = freshStatus.currentRank;
                         currentScore = freshStatus.userScore;
-                        console.log(`   Verified live rank on server: #${currentRank} (${currentScore} XP)`);
+                        console.log(`   Live rank: #${currentRank} (${currentScore} XP)`);
                     }
                 } catch {
                     currentRank = estimatedRank;
                 }
 
                 if (currentRank <= targetRank) {
-                    console.log(`\n🏆 GOAL ACHIEVED!`);
-                    console.log(`   You are now Rank #${currentRank} in ${status.leagueName}!`);
-                    console.log(`   Safely between 1st and 9th place. Stopping lessons.`);
+                    console.log(`\nTarget reached.`);
+                    console.log(`   Current Rank: #${currentRank} in ${status.leagueName}.`);
+                    console.log(`   Between 1st and 9th place. Stopping lessons.`);
                     break;
                 }
             } else {
@@ -247,26 +246,26 @@ async function checkAndDefendLeague(options = {}) {
             }
 
             if (lessonsCompleted >= maxLessons) {
-                console.log(`\n⚠️ Reached safety cap of ${maxLessons} lessons for this run.`);
-                console.log(`   Current Rank: #${currentRank}. Will continue climbing in next scheduled slot.`);
+                console.log(`\nReached lesson limit (${maxLessons}) for this run.`);
+                console.log(`   Current Rank: #${currentRank}. Will continue in the next scheduled run.`);
                 break;
             }
 
-            // Randomized human-like delay between lessons (1 to 2 minutes)
+            // Wait 1 to 2 minutes before starting the next lesson
             const delayMs = getRandomDelay(minDelaySec, maxDelaySec);
             const delaySec = Math.round(delayMs / 1000);
-            console.log(`⏳ Pacing pause: Sleeping ${delaySec}s before next lesson (human-like delay 1-2 min)...`);
+            console.log(`Waiting ${delaySec}s before next lesson...`);
             await sleep(delayMs);
 
         } catch (lessonErr) {
-            console.error(`❌ Lesson ${lessonNum} failed: ${lessonErr.message}`);
+            console.error(`Lesson ${lessonNum} failed: ${lessonErr.message}`);
             // Wait 10 seconds before retrying
             await sleep(10000);
         }
     }
 
     console.log(`\n====================================================`);
-    console.log(`🏁 League Defense Run Completed:`);
+    console.log(`League checker run finished:`);
     console.log(`   Lessons Completed: ${lessonsCompleted}`);
     console.log(`   Total XP Earned:   +${totalEarnedXp} XP`);
     console.log(`   Final Rank:        #${currentRank}`);
@@ -295,7 +294,7 @@ const main = async () => {
 
 if (require.main === module) {
     main().catch(err => {
-        console.error(`\n❌ Error during league checker run: ${err.message}`);
+        console.error(`\nError during league checker run: ${err.message}`);
         process.exit(1);
     });
 }
