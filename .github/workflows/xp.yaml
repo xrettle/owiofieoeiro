@@ -8,6 +8,12 @@ on:
         description: 'Amount of practice lessons to complete'
         required: true
         default: '5'
+        type: string
+      targetDate:
+        description: 'Day to add XP to (YYYY-MM-DD). Leave blank for today.'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   farm-xp:
@@ -29,5 +35,6 @@ jobs:
         run: node xp.js
         env:
           lessonsToComplete: ${{ github.event.inputs.lessonsToComplete }}
+          TARGET_DATE: ${{ github.event.inputs.targetDate }}
           TOKEN: ${{ secrets.TOKEN }}
           USER_ID: ${{ secrets.USER_ID }}

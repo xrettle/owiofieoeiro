@@ -167,6 +167,31 @@ function getLocalTimeInfo(date = new Date(), timeZone = 'America/Los_Angeles') {
 }
 
 /**
+ * Parses a YYYY-MM-DD (or ISO) string into a UTC Date at noon (12:00:00 UTC)
+ */
+function parseDateUtc(dateStr) {
+    if (!dateStr || typeof dateStr !== 'string' || !dateStr.trim()) return null;
+    const trimmed = dateStr.trim();
+    const parts = trimmed.split('-');
+    if (parts.length === 3 && /^\d{4}$/.test(parts[0]) && /^\d{1,2}$/.test(parts[1]) && /^\d{1,2}$/.test(parts[2])) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const d = new Date(Date.UTC(year, month, day, 12, 0, 0, 0));
+        if (!isNaN(d.getTime()) && d.getUTCFullYear() === year && d.getUTCMonth() === month && d.getUTCDate() === day) {
+            return d;
+        }
+        return null;
+    }
+    const d = new Date(trimmed);
+    if (!isNaN(d.getTime())) {
+        d.setUTCHours(12, 0, 0, 0);
+        return d;
+    }
+    return null;
+}
+
+/**
  * Checks if the user has already completed today's practice on Duolingo
  */
 function hasPracticedToday(userInfo, targetDateStr, timeZone = 'America/Los_Angeles') {
@@ -816,6 +841,7 @@ module.exports = {
     getCredentials,
     getHeaders,
     getLocalTimeInfo,
+    parseDateUtc,
     hasPracticedToday,
     getUserLanguages,
     createPracticeSession,

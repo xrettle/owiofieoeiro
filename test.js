@@ -11,11 +11,16 @@ const {
     getCredentials,
     getHeaders,
     getLocalTimeInfo,
+    parseDateUtc,
     hasPracticedToday,
     LEAGUE_NAMES,
     parseLeaderboardData,
     removeQuotes
 } = require('./helper.js');
+
+const {
+    resolveTargetTimestamp
+} = require('./xp.js');
 
 const {
     TIME_SLOTS,
@@ -383,4 +388,22 @@ assert.strictEqual(shopPayload.isFree, true);
 assert.strictEqual(shopPayload.consumed, true);
 console.log('   ✅ Streak Freeze payload structure passed\n');
 
-console.log('🎉 All 19 test suites passed successfully!\n');
+// 20. Test parseDateUtc & resolveTargetTimestamp for XP Farm date option
+console.log('Test 20: parseDateUtc & resolveTargetTimestamp');
+assert.strictEqual(resolveTargetTimestamp(''), null);
+assert.strictEqual(resolveTargetTimestamp('   '), null);
+assert.strictEqual(resolveTargetTimestamp(undefined), null);
+assert.strictEqual(resolveTargetTimestamp(null), null);
+
+const targetDate = parseDateUtc('2026-11-10');
+assert(targetDate instanceof Date);
+assert.strictEqual(targetDate.toISOString(), '2026-11-10T12:00:00.000Z');
+assert.strictEqual(resolveTargetTimestamp('2026-11-10'), Math.floor(Date.UTC(2026, 10, 10, 12, 0, 0, 0) / 1000));
+
+assert.strictEqual(parseDateUtc('2026-02-30'), null);
+assert.strictEqual(parseDateUtc('not-a-date'), null);
+assert.throws(() => resolveTargetTimestamp('2026-02-30'), /Invalid target date/);
+assert.throws(() => resolveTargetTimestamp('invalid'), /Invalid target date/);
+console.log('   ✅ parseDateUtc & resolveTargetTimestamp passed\n');
+
+console.log('🎉 All 20 test suites passed successfully!\n');

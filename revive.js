@@ -10,34 +10,11 @@ const {
     getHeaders,
     getCredentials,
     createPracticeSession,
-    submitPracticeSession
+    submitPracticeSession,
+    parseDateUtc
 } = require('./helper.js');
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-/**
- * Parses YYYY-MM-DD into a UTC Date object at noon (12:00:00 UTC)
- */
-function parseDateUtc(dateStr) {
-    if (!dateStr || typeof dateStr !== 'string' || !dateStr.trim()) return null;
-    const trimmed = dateStr.trim();
-    const parts = trimmed.split('-');
-    if (parts.length === 3) {
-        const year = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const day = parseInt(parts[2], 10);
-        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-            const d = new Date(Date.UTC(year, month, day, 12, 0, 0, 0));
-            if (!isNaN(d.getTime())) return d;
-        }
-    }
-    const d = new Date(trimmed);
-    if (!isNaN(d.getTime())) {
-        d.setUTCHours(12, 0, 0, 0);
-        return d;
-    }
-    return null;
-}
 
 /**
  * Formats a Date object to YYYY-MM-DD
