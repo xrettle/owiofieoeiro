@@ -12,6 +12,9 @@ on:
     # Slot 3: Evening 08:15 PM (PDT: 03:15 UTC, PST: 04:15 UTC)
     - cron: '15 3 * * *'
     - cron: '15 4 * * *'
+    # Safety Net: Late Night 10:30 PM (PDT: 05:30 UTC, PST: 06:30 UTC)
+    - cron: '30 5 * * *'
+    - cron: '30 6 * * *'
   workflow_dispatch:
     inputs:
       mode:
@@ -49,7 +52,7 @@ jobs:
       - name: Run streak keeper
         run: node streak-keeper.js
         env:
-          MODE: ${{ github.event.inputs.mode }}
+          MODE: ${{ github.event.inputs.mode || (github.event_name == 'workflow_dispatch' && 'immediate') || '' }}
           LEAGUE_CHECKER: ${{ github.event.inputs.league_checker || vars.LEAGUE_CHECKER || 'true' }}
           TIMEZONE: ${{ vars.TIMEZONE || 'America/Los_Angeles' }}
           TOKEN: ${{ secrets.TOKEN }}

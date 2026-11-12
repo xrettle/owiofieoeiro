@@ -26,7 +26,8 @@ const {
     TIME_SLOTS,
     pseudoRandom,
     getDaySchedule,
-    getCurrentSlot
+    getCurrentSlot,
+    decideStreakKeeperAction
 } = require('./streak-keeper.js');
 
 const {
@@ -406,4 +407,71 @@ assert.throws(() => resolveTargetTimestamp('2026-02-30'), /Invalid target date/)
 assert.throws(() => resolveTargetTimestamp('invalid'), /Invalid target date/);
 console.log('   parseDateUtc & resolveTargetTimestamp passed\n');
 
-console.log('All 20 test suites passed.\n');
+// 21. Test decideStreakKeeperAction resilient scheduling logic
+console.log('Test 21: decideStreakKeeperAction resilient scheduling logic');
+const mockMorningSchedule = {
+    slot: TIME_SLOTS[0], // Morning: 06:40 - 07:30
+    targetHour: 6,
+    targetMinute: 40,
+    targetSecond: 1,
+    targetTotalSeconds: 6 * 3600 + 40 * 60 + 1, // 24001 sec (06:40:01)
+    targetTimeStr: '06:40:01'
+};
+
+// Scenario A: Already practiced
+assert.deepStrictEqual(
+    decideStreakKeeperAction({
+        alreadyPracticed: true,
+        currentTotalSec: 4 * 3600 + 41 * 60 + 54,
+        schedule: mockMorningSchedule,
+        currentSlot: null
+    }),
+    { action: 'ALREADY_COMPLETED' }
+);
+
+// Scenario B: Missed slot / target time already passed (e.g. 08:00 AM or 17:00 PM)
+assert.deepStrictEqual(
+    decideStreakKeeperAction({
+        alreadyPracticed: false,
+        currentTotalSec: 8 * 3600, // 08:00:00 (past 06:40:01)
+        schedule: mockMorningSchedule,
+        currentSlot: null
+    }),
+    { action: 'RUN_IMMEDIATELY_TARGET_PASSED' }
+);
+
+// Scenario C: Target time reached exactly or passed inside afternoon slot
+assert.deepStrictEqual(
+    decideStreakKeeperAction({
+        alreadyPracticed: false,
+        currentTotalSec: 17 * 3600 + 10 * 60, // 17:10 (afternoon slot)
+        schedule: mockMorningSchedule,
+        currentSlot: TIME_SLOTS[1]
+    }),
+    { action: 'RUN_IMMEDIATELY_TARGET_PASSED' }
+);
+
+// Scenario D: Within target slot, before target time (wait and run)
+assert.deepStrictEqual(
+    decideStreakKeeperAction({
+        alreadyPracticed: false,
+        currentTotalSec: 6 * 3600 + 40 * 60, // 06:40:00 (1 second before 06:40:01)
+        schedule: mockMorningSchedule,
+        currentSlot: TIME_SLOTS[0]
+    }),
+    { action: 'WAIT_AND_RUN', delaySec: 1 }
+);
+
+// Scenario E: Well before target time (e.g. 04:41:54 AM, ~118 minutes before)
+const earlySec = 4 * 3600 + 41 * 60 + 54;
+const earlyDecision = decideStreakKeeperAction({
+    alreadyPracticed: false,
+    currentTotalSec: earlySec,
+    schedule: mockMorningSchedule,
+    currentSlot: null
+});
+assert.strictEqual(earlyDecision.action, 'SKIP_TOO_EARLY');
+assert.strictEqual(earlyDecision.delaySec, 24001 - earlySec);
+console.log('   decideStreakKeeperAction passed\n');
+
+console.log('All 21 test suites passed.\n');

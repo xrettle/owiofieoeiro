@@ -98,6 +98,24 @@ function getCurrentSlot(totalMinutes, slots = TIME_SLOTS) {
     return slots.find(s => totalMinutes >= s.startMin && totalMinutes <= s.endMin) || null;
 }
 
+/**
+ * Evaluates the required action for the streak keeper based on current time and practice status
+ */
+function decideStreakKeeperAction({ alreadyPracticed, currentTotalSec, schedule, currentSlot }) {
+    if (alreadyPracticed) {
+        return { action: 'ALREADY_COMPLETED' };
+    }
+    if (currentTotalSec >= schedule.targetTotalSeconds) {
+        return { action: 'RUN_IMMEDIATELY_TARGET_PASSED' };
+    }
+    const delaySec = schedule.targetTotalSeconds - currentTotalSec;
+    const isTargetSlot = currentSlot && currentSlot.id === schedule.slot.id;
+    if (isTargetSlot || delaySec <= 30 * 60) {
+        return { action: 'WAIT_AND_RUN', delaySec };
+    }
+    return { action: 'SKIP_TOO_EARLY', delaySec };
+}
+
 const main = async () => {
     const timeZone = process.env.TIMEZONE || 'America/Los_Angeles';
     const mode = (process.env.MODE || 'random').toLowerCase().trim();
@@ -180,79 +198,62 @@ const main = async () => {
         console.warn(`Warning: Could not verify today's practice status (${fetchErr.message}). Continuing with schedule.`);
     }
 
+    // Determine action to take based on schedule and completion status
+    const currentTotalSec = localInfo.totalSeconds;
     const currentSlot = getCurrentSlot(localInfo.totalMinutes);
+    const decision = decideStreakKeeperAction({
+        alreadyPracticed,
+        currentTotalSec,
+        schedule,
+        currentSlot
+    });
 
-    // If outside all 3 time slots, exit immediately
-    if (!currentSlot) {
-        console.log(`\nCurrent time (${localInfo.timeStr}) is outside all configured time slots:`);
-        TIME_SLOTS.forEach(s => console.log(`   - ${s.name}: ${s.start} - ${s.end}`));
-
-        if (alreadyPracticed && isLeagueCheckerEnabled) {
-            console.log('\nChecking league status...');
-            await checkAndDefendLeague();
-        }
-
-        console.log(`Exiting.`);
-        process.exit(0);
-    }
-
-    console.log(`\nActive Time Slot: ${currentSlot.name} (${currentSlot.start} - ${currentSlot.end})`);
-
-    const isTargetSlot = currentSlot.id === schedule.slot.id;
-    const isFinalSlot = currentSlot.id === TIME_SLOTS[TIME_SLOTS.length - 1].id;
-
-    // Practice is done today; run league checker if enabled
-    if (alreadyPracticed) {
-        console.log(`\nDaily practice is already complete. Running league checker...`);
+    if (decision.action === 'ALREADY_COMPLETED') {
+        console.log(`\n[STATUS: ALREADY COMPLETED]`);
+        console.log(`Daily practice is already recorded. Current Streak: ${userInfo?.streak || 'active'} days.`);
         if (isLeagueCheckerEnabled) {
+            console.log('\nChecking league status...');
             await checkAndDefendLeague();
         }
         console.log(`\nStreak keeper run finished.`);
         process.exit(0);
     }
 
-    // If this is not today's selected slot
-    if (!isTargetSlot) {
-        if (isFinalSlot) {
-            // Fallback: earlier slot did not complete today's lesson, so run in the final slot
-            console.log(`\nFallback triggered:`);
-            console.log(`   Earlier slot (${schedule.slot.name}) passed without a completed lesson.`);
-            console.log(`   Running in the final slot (${currentSlot.name}) instead.`);
-        } else {
-            console.log(`\nToday's lesson is scheduled for the ${schedule.slot.name} slot (${schedule.targetTimeStr}).`);
-            console.log(`   Skipping current ${currentSlot.name} slot.`);
-            process.exit(0);
+    if (decision.action === 'RUN_IMMEDIATELY_TARGET_PASSED') {
+        console.log(`\n[ACTION REQUIRED] Today's target time (${schedule.targetTimeStr}) has arrived or passed.`);
+        console.log(`Practice has not been recorded yet today. Starting lesson immediately to protect streak...`);
+        await completeLessons(1);
+        if (isLeagueCheckerEnabled) {
+            console.log('\nRunning league checker...');
+            await checkAndDefendLeague();
         }
+        console.log(`\n[STATUS: COMPLETED - LESSON SUBMITTED] Streak preserved!`);
+        process.exit(0);
     }
 
-    // Calculate delay to reach target time
-    const currentTotalSec = localInfo.totalSeconds;
-    let delaySec = isTargetSlot
-        ? (schedule.targetTotalSeconds - currentTotalSec)
-        : 0;
-
-    // If the target time within this slot has already arrived or passed, run immediately
-    if (delaySec <= 0) {
-        console.log(`\nTarget time (${schedule.targetTimeStr}) reached. Starting lesson...`);
-    } else {
-        const waitMinutes = Math.floor(delaySec / 60);
-        const waitRemainderSec = delaySec % 60;
-        console.log(`\nTarget time is ${schedule.targetTimeStr}.`);
-        console.log(`   Waiting ${waitMinutes}m ${waitRemainderSec}s before running lesson...`);
-        await sleep(delaySec * 1000);
-        console.log(`\nStarting lesson at ${schedule.targetTimeStr}...`);
+    if (decision.action === 'WAIT_AND_RUN') {
+        const waitMinutes = Math.floor(decision.delaySec / 60);
+        const waitRemainderSec = decision.delaySec % 60;
+        console.log(`\nTarget time is ${schedule.targetTimeStr} (${schedule.slot.name} slot).`);
+        console.log(`Waiting ${waitMinutes}m ${waitRemainderSec}s before running lesson...`);
+        await sleep(decision.delaySec * 1000);
+        console.log(`\nStarting lesson at target time (${schedule.targetTimeStr})...`);
+        await completeLessons(1);
+        if (isLeagueCheckerEnabled) {
+            console.log('\nRunning league checker...');
+            await checkAndDefendLeague();
+        }
+        console.log(`\n[STATUS: COMPLETED - LESSON SUBMITTED] Streak preserved!`);
+        process.exit(0);
     }
 
-    // Complete daily lesson
-    await completeLessons(1);
-
-    // Run league checker after lesson completion
-    if (isLeagueCheckerEnabled) {
-        console.log(`\nRunning league checker...`);
-        await checkAndDefendLeague();
-    }
-
-    console.log(`\nStreak keeper run finished.`);
+    // SKIP_TOO_EARLY
+    const waitMinutes = Math.floor(decision.delaySec / 60);
+    console.log(`\n[STATUS: PENDING - NO PRACTICE PERFORMED YET]`);
+    console.log(`Today's lesson is scheduled for ${schedule.targetTimeStr} in the ${schedule.slot.name} slot.`);
+    console.log(`Current local time (${localInfo.timeStr}) is ${waitMinutes} minutes before the scheduled time.`);
+    console.log(`A future scheduled runner will execute practice when the slot arrives.`);
+    process.exit(0);
 };
 
 if (require.main === module) {
@@ -267,5 +268,6 @@ module.exports = {
     pseudoRandom,
     getDaySchedule,
     getCurrentSlot,
+    decideStreakKeeperAction,
     main
 };
