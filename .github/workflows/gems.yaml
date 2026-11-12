@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       amount:
-        description: 'Number of gems to add (default: 300)'
+        description: 'Amount of gems to add (e.g. 100, 300, 500, 1000)'
         required: false
         default: '300'
         type: string
@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Add gems
+      - name: Run Gems Generator
         run: node gems.js
         env:
           GEMS: ${{ github.event.inputs.amount || '300' }}

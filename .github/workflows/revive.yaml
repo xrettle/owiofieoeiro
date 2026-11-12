@@ -1,11 +1,11 @@
-name: 'Duolingo Streak Reviver'
+name: 'Duolingo Streak Reviver (Backfill)'
 run-name: 'Revive Duolingo Streak'
 
 on:
   workflow_dispatch:
     inputs:
       startDate:
-        description: 'Start date (YYYY-MM-DD). Leave blank to start after your previous streak.'
+        description: 'Start date (YYYY-MM-DD). Leave blank to auto-detect from previous streak.'
         required: false
         default: ''
       endDate:
@@ -13,7 +13,7 @@ on:
         required: false
         default: ''
       daysBack:
-        description: 'Number of past days to backfill (for example: 7 or 30).'
+        description: 'Alternative: number of past days to backfill (e.g. 7 or 30).'
         required: false
         default: ''
 
@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run streak reviver
+      - name: Run Streak Reviver Loop
         run: node revive.js
         env:
           START_DATE: ${{ github.event.inputs.startDate }}

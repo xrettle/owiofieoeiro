@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       lessonsToComplete:
-        description: 'Number of practice lessons to complete each run'
+        description: 'Amount of practice lessons to complete each time'
         required: true
         default: '1'
 
@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run XP script
+      - name: Run XP Script
         run: node xp.js
         env:
           lessonsToComplete: ${{ github.event.inputs.lessonsToComplete }}

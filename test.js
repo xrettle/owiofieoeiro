@@ -361,18 +361,25 @@ const mockProfile = {
     },
     streakData: { currentStreak: { length: 150 } },
     fromLanguage: 'en',
-    learningLanguage: 'de'
+    learningLanguage: 'de',
+    rewards: [
+        { id: 'REWARD_1', consumed: false, type: 'CHEST' },
+        { id: 'REWARD_2', consumed: true, type: 'XP' }
+    ]
 };
 
 const gems = mockProfile.gemsConfig?.gems ?? mockProfile.lingots;
 const regularFreezes = mockProfile.inventory?.streak_freeze?.quantity || 0;
 const societyFreezes = mockProfile.inventory?.society_streak_freeze?.quantity || 0;
 const totalFreezes = regularFreezes + societyFreezes;
+const pendingRewards = (mockProfile.rewards || []).filter(r => !r.consumed);
 
 assert.strictEqual(gems, 2450);
 assert.strictEqual(regularFreezes, 2);
 assert.strictEqual(societyFreezes, 3);
 assert.strictEqual(totalFreezes, 5);
+assert.strictEqual(pendingRewards.length, 1);
+assert.strictEqual(pendingRewards[0].id, 'REWARD_1');
 console.log('   Inventory & Freeze parsing passed\n');
 
 // 19. Test Streak Freeze Shop Item payload structure

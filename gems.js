@@ -11,7 +11,7 @@ const {
     getUserInventoryAndGems,
     claimGemReward
 } = require('./helper.js');
-const { sleep } = require('./xp.js');
+const { completeLessons, sleep } = require('./xp.js');
 
 /**
  * Adds a custom amount of gems to the user's Duolingo account
@@ -40,67 +40,123 @@ async function addGems(customAmount = 300) {
     console.log(`Target Gems to Add: +${targetGems} Gems`);
     console.log(`====================================================\n`);
 
-    // Each balanced reward claim awards ~30 gems
-    const GEMS_PER_REWARD = 30;
-    const totalClaimsNeeded = Math.ceil(targetGems / GEMS_PER_REWARD);
     const headers = getHeaders(token);
-
     let successfulClaims = 0;
-    let estimatedGemsGained = 0;
 
-    for (let i = 0; i < totalClaimsNeeded; i++) {
-        const claimNum = i + 1;
-        const randomSeed = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-        const rewardId = `SKILL_COMPLETION_BALANCED-${randomSeed}-2-GEMS`;
-
-        console.log(`Claiming reward ${claimNum}/${totalClaimsNeeded}...`);
-
-        try {
-            await claimGemReward(headers, userId, rewardId, {
-                fromLanguage: initialProfile.fromLanguage,
-                learningLanguage: initialProfile.learningLanguage
-            });
-
-            successfulClaims++;
-            estimatedGemsGained += GEMS_PER_REWARD;
-            console.log(`   Accepted: +${GEMS_PER_REWARD} gems (${estimatedGemsGained}/${targetGems})`);
-
-            // Pause between claims to avoid rate limits
-            if (i < totalClaimsNeeded - 1) {
-                await sleep(1200);
+    // STEP 1: Claim any unconsumed / pending rewards on the user's account
+    if (initialProfile.pendingRewards && initialProfile.pendingRewards.length > 0) {
+        console.log(`Found ${initialProfile.pendingRewards.length} pending reward(s) on your account. Claiming...`);
+        for (const reward of initialProfile.pendingRewards) {
+            try {
+                await claimGemReward(headers, userId, reward.id, {
+                    fromLanguage: initialProfile.fromLanguage,
+                    learningLanguage: initialProfile.learningLanguage
+                });
+                successfulClaims++;
+                console.log(`   Claimed pending reward: ${reward.id}`);
+                await sleep(1000);
+            } catch (err) {
+                console.warn(`   Could not claim pending reward ${reward.id}: ${err.message}`);
             }
-        } catch (err) {
-            console.warn(`   Warning: Claim ${claimNum} failed: ${err.message}`);
-            // Brief backoff before next attempt
-            await sleep(2000);
         }
     }
 
-    // Refresh balance to check confirmed total
-    console.log(`\nChecking updated gem balance...`);
+    // Refresh balance after claiming pending rewards
+    let currentProfile = await getUserInventoryAndGems(token, userId);
+    let gemsGainedSoFar = currentProfile.gems - startingGems;
+
+    // STEP 2: Attempt direct balanced reward claims
+    if (gemsGainedSoFar < targetGems) {
+        const remainingNeeded = targetGems - gemsGainedSoFar;
+        const GEMS_PER_REWARD = 30;
+        const totalClaimsNeeded = Math.ceil(remainingNeeded / GEMS_PER_REWARD);
+
+        console.log(`\nAttempting direct reward claims for remaining +${remainingNeeded} gems (${totalClaimsNeeded} claims)...`);
+
+        for (let i = 0; i < totalClaimsNeeded; i++) {
+            const claimNum = i + 1;
+            const randomSeed = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+            const rewardId = `SKILL_COMPLETION_BALANCED-${randomSeed}-2-GEMS`;
+
+            try {
+                await claimGemReward(headers, userId, rewardId, {
+                    fromLanguage: initialProfile.fromLanguage,
+                    learningLanguage: initialProfile.learningLanguage
+                });
+
+                successfulClaims++;
+                gemsGainedSoFar += GEMS_PER_REWARD;
+                console.log(`   Accepted claim ${claimNum}/${totalClaimsNeeded}: +${GEMS_PER_REWARD} gems`);
+
+                if (i < totalClaimsNeeded - 1) {
+                    await sleep(1200);
+                }
+            } catch (err) {
+                console.warn(`   Direct reward claim not accepted by server (${err.message}).`);
+                // Stop direct claim attempts early if server doesn't accept arbitrary seeds
+                break;
+            }
+        }
+    }
+
+    // Refresh balance after direct claims
+    currentProfile = await getUserInventoryAndGems(token, userId);
+    gemsGainedSoFar = currentProfile.gems - startingGems;
+
+    // STEP 3: If still below target, complete practice lessons to generate gems & reward chests
+    if (gemsGainedSoFar < targetGems) {
+        const remainingToEarn = targetGems - gemsGainedSoFar;
+        const lessonsToRun = Math.min(8, Math.max(1, Math.ceil(remainingToEarn / 30)));
+        console.log(`\nCompleting ${lessonsToRun} practice lesson(s) to earn gems and generate reward drops...`);
+
+        try {
+            await completeLessons(lessonsToRun);
+
+            // Re-check inventory for newly unlocked rewards
+            await sleep(1500);
+            const afterPractice = await getUserInventoryAndGems(token, userId);
+            if (afterPractice.pendingRewards && afterPractice.pendingRewards.length > 0) {
+                console.log(`Claiming ${afterPractice.pendingRewards.length} new reward(s) unlocked from practice...`);
+                for (const reward of afterPractice.pendingRewards) {
+                    try {
+                        await claimGemReward(headers, userId, reward.id, {
+                            fromLanguage: initialProfile.fromLanguage,
+                            learningLanguage: initialProfile.learningLanguage
+                        });
+                        successfulClaims++;
+                        console.log(`   Claimed: ${reward.id}`);
+                        await sleep(1000);
+                    } catch {
+                        // ignore individual claim errors
+                    }
+                }
+            }
+        } catch (practiceErr) {
+            console.warn(`Practice lesson note: ${practiceErr.message}`);
+        }
+    }
+
+    // Verify confirmed total
+    console.log(`\nVerifying updated gem balance...`);
     await sleep(1500);
 
-    let endingGems = startingGems + estimatedGemsGained;
+    let endingGems = startingGems;
     try {
         const finalProfile = await getUserInventoryAndGems(token, userId);
         endingGems = finalProfile.gems;
     } catch {
-        // Fallback to estimated
+        endingGems = startingGems + gemsGainedSoFar;
     }
 
-    const actualGemsGained = Math.max(0, endingGems - startingGems) || estimatedGemsGained;
+    const actualGemsGained = Math.max(0, endingGems - startingGems);
 
     console.log(`\n====================================================`);
     console.log(`Gem addition finished:`);
-    console.log(`   Successful Claims: ${successfulClaims}/${totalClaimsNeeded}`);
+    console.log(`   Successful Claims: ${successfulClaims}`);
     console.log(`   Starting Balance:  ${startingGems} gems`);
     console.log(`   Ending Balance:    ${endingGems} gems`);
     console.log(`   Total Gems Gained: +${actualGemsGained} gems`);
     console.log(`====================================================\n`);
-
-    if (successfulClaims === 0) {
-        throw new Error('All attempted gem claims failed. Please check your token and account status.');
-    }
 
     return {
         startingGems,

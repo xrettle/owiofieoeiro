@@ -692,7 +692,7 @@ async function getUserInventoryAndGems(customToken, customUserId) {
     }
 
     const headers = getHeaders(token);
-    const url = `https://www.duolingo.com/2017-06-30/users/${userId}?fields=gemsConfig,lingots,inventory,streakData,fromLanguage,learningLanguage,username,name`;
+    const url = `https://www.duolingo.com/2017-06-30/users/${userId}?fields=gemsConfig,lingots,inventory,streakData,fromLanguage,learningLanguage,username,name,rewards`;
 
     const res = await fetch(url, { headers, method: 'GET' });
     if (!res.ok) {
@@ -710,6 +710,22 @@ async function getUserInventoryAndGems(customToken, customUserId) {
     const societyFreezes = inventory.society_streak_freeze?.quantity || 0;
     const totalFreezes = regularFreezes + societyFreezes;
 
+    const rawRewards = data.rewards || [];
+    const pendingRewards = [];
+    if (Array.isArray(rawRewards)) {
+        rawRewards.forEach(r => {
+            if (r && !r.consumed && r.id) {
+                pendingRewards.push(r);
+            }
+        });
+    } else if (typeof rawRewards === 'object' && rawRewards !== null) {
+        Object.entries(rawRewards).forEach(([id, r]) => {
+            if (r && typeof r === 'object' && !r.consumed) {
+                pendingRewards.push({ id: r.id || id, ...r });
+            }
+        });
+    }
+
     return {
         userId,
         username: data.username || data.name || userId,
@@ -723,7 +739,9 @@ async function getUserInventoryAndGems(customToken, customUserId) {
         fromLanguage: data.fromLanguage || 'en',
         learningLanguage: data.learningLanguage || 'es',
         streak: data.streakData?.currentStreak?.length || 0,
-        streakData: data.streakData || null
+        streakData: data.streakData || null,
+        rewards: data.rewards || null,
+        pendingRewards
     };
 }
 
