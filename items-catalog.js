@@ -95,7 +95,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_THIRD-{seed}-avatar_skin_dead_duo',
         shopName: 'avatar_skin_dead_duo',
-        imageUrl: '/assets/items/avatar_skin_dead_duo.svg',
+        imageUrl: '/assets/items/avatar_skin_dead_duo.png',
         tag: 'Supernatural Skin',
         description: 'Spooky ghostly Duo hovering with an ethereal glow.',
         rarity: 'Mythic'
@@ -107,7 +107,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_FOURTH-{seed}-toy_hunt',
         shopName: 'avatar_skin_toy_hunt_grand_prize',
-        imageUrl: '/assets/items/avatar_skin_toy_hunt_grand_prize.svg',
+        imageUrl: '/assets/items/avatar_skin_toy_hunt_grand_prize.webp',
         tag: 'Collector Series',
         description: 'Plush teddy bear Duo unlocked from complete puzzle challenge sets.',
         rarity: 'Legendary'
@@ -119,7 +119,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_HALLOWEEN-{seed}-pumpkin',
         shopName: 'avatar_skin_halloween_duo',
-        imageUrl: '/assets/items/avatar_skin_halloween_duo.svg',
+        imageUrl: '/assets/items/avatar_skin_halloween_duo.jpg',
         tag: 'Seasonal Special',
         description: 'Carved pumpkin armor with an ominous grin and autumn aura.',
         rarity: 'Epic'
@@ -143,7 +143,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_SPACE-{seed}-astronaut',
         shopName: 'avatar_skin_space_duo',
-        imageUrl: '/assets/items/avatar_skin_space_duo.svg',
+        imageUrl: '/assets/items/avatar_skin_space_duo.png',
         tag: 'Cosmic Skin',
         description: 'Pressurized lunar exploration suit with reflective gold visor.',
         rarity: 'Legendary'
@@ -195,7 +195,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-br',
         shopName: 'country_suit_br',
-        imageUrl: '/assets/items/avatar_skin_world_cup_br.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_br.png',
         tag: 'Country Jersey',
         description: 'Canarinho yellow and green national team jersey with tournament crest.',
         rarity: 'Rare'
@@ -207,7 +207,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-ar',
         shopName: 'country_suit_ar',
-        imageUrl: '/assets/items/avatar_skin_world_cup_ar.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_ar.png',
         tag: 'Country Jersey',
         description: 'Albiceleste sky blue and white striped world champion kit.',
         rarity: 'Rare'
@@ -219,7 +219,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-fr',
         shopName: 'country_suit_fr',
-        imageUrl: '/assets/items/avatar_skin_world_cup_fr.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_fr.png',
         tag: 'Country Jersey',
         description: 'Les Bleus royal navy jersey with gold rooster emblem.',
         rarity: 'Rare'
@@ -231,7 +231,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-de',
         shopName: 'country_suit_de',
-        imageUrl: '/assets/items/avatar_skin_world_cup_de.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_de.png',
         tag: 'Country Jersey',
         description: 'Classic monochrome Die Mannschaft kit with eagle badge.',
         rarity: 'Rare'
@@ -243,7 +243,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-es',
         shopName: 'country_suit_es',
-        imageUrl: '/assets/items/avatar_skin_world_cup_es.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_es.png',
         tag: 'Country Jersey',
         description: 'La Roja fiery red and gold jersey celebrating Iberian football.',
         rarity: 'Rare'
@@ -255,7 +255,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-us',
         shopName: 'country_suit_us',
-        imageUrl: '/assets/items/avatar_skin_world_cup_us.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_us.png',
         tag: 'Country Jersey',
         description: 'Stars & Stripes athletic jersey with navy and crimson accents.',
         rarity: 'Rare'
@@ -267,7 +267,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-gb',
         shopName: 'country_suit_gb',
-        imageUrl: '/assets/items/avatar_skin_world_cup_gb.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_gb.png',
         tag: 'Country Jersey',
         description: 'Traditional Three Lions white and navy jersey with red badge.',
         rarity: 'Rare'
@@ -279,7 +279,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-jp',
         shopName: 'country_suit_jp',
-        imageUrl: '/assets/items/avatar_skin_world_cup_jp.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_jp.png',
         tag: 'Country Jersey',
         description: 'Samurai Blue aerodynamic jersey with origami feather motif.',
         rarity: 'Rare'
@@ -291,7 +291,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-mx',
         shopName: 'country_suit_mx',
-        imageUrl: '/assets/items/avatar_skin_world_cup_mx.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_mx.png',
         tag: 'Country Jersey',
         description: 'El Tri deep emerald green kit with Aztec-inspired feather patterns.',
         rarity: 'Rare'
@@ -303,7 +303,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-it',
         shopName: 'country_suit_it',
-        imageUrl: '/assets/items/avatar_skin_world_cup_it.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_it.png',
         tag: 'Country Jersey',
         description: 'Gli Azzurri Mediterranean blue kit with tricolore sleeve trim.',
         rarity: 'Rare'
@@ -315,7 +315,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-ca',
         shopName: 'country_suit_ca',
-        imageUrl: '/assets/items/avatar_skin_world_cup_ca.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_ca.png',
         tag: 'Country Jersey',
         description: 'Bold red and white jersey featuring stylized maple leaf graphics.',
         rarity: 'Rare'
@@ -327,7 +327,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-kr',
         shopName: 'country_suit_kr',
-        imageUrl: '/assets/items/avatar_skin_world_cup_kr.svg',
+        imageUrl: '/assets/items/avatar_skin_world_cup_kr.png',
         tag: 'Country Jersey',
         description: 'Taegeuk Warriors vivid red jersey with white tiger crest.',
         rarity: 'Rare'

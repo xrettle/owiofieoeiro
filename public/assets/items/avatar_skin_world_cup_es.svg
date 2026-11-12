@@ -1,9 +1,0 @@
-<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-        <!-- Spain Red Jersey -->
-        <path d="M24 20 L56 20 L66 34 L56 38 L54 62 L26 62 L24 38 L14 34 Z" fill="#DC2626" stroke="#991B1B" stroke-width="1.5"/>
-        <!-- Gold Trim -->
-        <polygon points="34,20 40,27 46,20" fill="#FACC15"/>
-        <circle cx="40" cy="38" r="5.5" fill="#FACC15"/>
-        <circle cx="40" cy="38" r="3.5" fill="#B91C1C"/>
-        <text x="40" y="58" font-size="7" font-weight="900" text-anchor="middle" fill="#FACC15" font-family="sans-serif">ESP</text>
-    </svg>

@@ -1248,6 +1248,16 @@
 
         // Initial Boot
         async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('category')) {
+                selectedCategory = urlParams.get('category');
+            }
+            if (urlParams.get('q')) {
+                searchQuery = urlParams.get('q').toLowerCase().trim();
+                const input = document.getElementById('searchInput');
+                if (input) input.value = urlParams.get('q');
+            }
+
             await loadCatalog();
             await loadProfile();
 

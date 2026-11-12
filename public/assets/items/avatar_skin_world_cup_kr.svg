@@ -1,8 +1,0 @@
-<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-        <!-- South Korea Red Jersey -->
-        <path d="M24 20 L56 20 L66 34 L56 38 L54 62 L26 62 L24 38 L14 34 Z" fill="#EF4444" stroke="#B91C1C" stroke-width="1.5"/>
-        <!-- Taegeuk Yin-Yang Circle -->
-        <circle cx="40" cy="38" r="6" fill="#1D4ED8"/>
-        <path d="M40 32 A3 3 0 0 1 40 38 A3 3 0 0 0 40 44 A6 6 0 0 0 40 32" fill="#EF4444"/>
-        <text x="40" y="58" font-size="7" font-weight="900" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif">KOR</text>
-    </svg>
