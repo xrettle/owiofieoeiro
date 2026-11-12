@@ -680,6 +680,11 @@ async function getLeaderboardStatus(customToken, customUserId) {
 }
 
 /**
+ * Sleep helper for pacing requests
+ */
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
  * Fetches user profile along with inventory, gemsConfig, and lingots
  */
 async function getUserInventoryAndGems(customToken, customUserId) {
@@ -692,36 +697,98 @@ async function getUserInventoryAndGems(customToken, customUserId) {
     }
 
     const headers = getHeaders(token);
-    const url = `https://www.duolingo.com/2017-06-30/users/${userId}?fields=gemsConfig,lingots,inventory,streakData,fromLanguage,learningLanguage,username,name,rewards`;
+    const primaryFields = 'gems,gemsConfig,lingots,inventory,streakData,fromLanguage,learningLanguage,username,name,rewards,rewardBundles,achievements';
+    const fallbackFields = 'gemsConfig,lingots,inventory,streakData,fromLanguage,learningLanguage,username,name,rewards';
 
-    const res = await fetch(url, { headers, method: 'GET' });
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to fetch inventory and gems (HTTP ${res.status}): ${text}`);
+    let data;
+    try {
+        const url = `https://www.duolingo.com/2017-06-30/users/${userId}?fields=${primaryFields}`;
+        const res = await fetch(url, { headers, method: 'GET' });
+        if (res.ok) {
+            data = await res.json();
+        } else {
+            const fallbackUrl = `https://www.duolingo.com/2017-06-30/users/${userId}?fields=${fallbackFields}`;
+            const fallbackRes = await fetch(fallbackUrl, { headers, method: 'GET' });
+            if (!fallbackRes.ok) {
+                const text = await fallbackRes.text();
+                throw new Error(`Failed to fetch inventory and gems (HTTP ${fallbackRes.status}): ${text}`);
+            }
+            data = await fallbackRes.json();
+        }
+    } catch (fetchErr) {
+        if (!data) {
+            throw fetchErr;
+        }
     }
 
-    const data = await res.json();
-    const gems = typeof data.gemsConfig?.gems === 'number'
-        ? data.gemsConfig.gems
-        : (typeof data.lingots === 'number' ? data.lingots : 0);
+    const gems = typeof data.gems === 'number'
+        ? data.gems
+        : (typeof data.gemsConfig?.gems === 'number'
+            ? data.gemsConfig.gems
+            : (typeof data.lingots === 'number' ? data.lingots : 0));
 
     const inventory = data.inventory || {};
     const regularFreezes = inventory.streak_freeze?.quantity || 0;
     const societyFreezes = inventory.society_streak_freeze?.quantity || 0;
     const totalFreezes = regularFreezes + societyFreezes;
 
-    const rawRewards = data.rewards || [];
     const pendingRewards = [];
+    const seenRewardIds = new Set();
+
+    function addPendingReward(r) {
+        if (!r || typeof r !== 'object') return;
+        const id = r.id || r.rewardId;
+        if (!id || seenRewardIds.has(id)) return;
+        if (!r.consumed) {
+            seenRewardIds.add(id);
+            pendingRewards.push({
+                id,
+                rewardType: r.rewardType || r.type || 'REWARD',
+                currency: r.currency || 'GEMS',
+                amount: r.amount || r.gemAmount || null,
+                ...r
+            });
+        }
+    }
+
+    // 1. Process standard rewards list
+    const rawRewards = data.rewards || [];
     if (Array.isArray(rawRewards)) {
-        rawRewards.forEach(r => {
-            if (r && !r.consumed && r.id) {
-                pendingRewards.push(r);
-            }
-        });
+        rawRewards.forEach(addPendingReward);
     } else if (typeof rawRewards === 'object' && rawRewards !== null) {
         Object.entries(rawRewards).forEach(([id, r]) => {
-            if (r && typeof r === 'object' && !r.consumed) {
-                pendingRewards.push({ id: r.id || id, ...r });
+            if (r && typeof r === 'object') {
+                addPendingReward({ id: r.id || id, ...r });
+            }
+        });
+    }
+
+    // 2. Process rewardBundles (modern Duolingo rewards)
+    const rawBundles = data.rewardBundles || [];
+    if (Array.isArray(rawBundles)) {
+        rawBundles.forEach(bundle => {
+            if (bundle && Array.isArray(bundle.rewards)) {
+                bundle.rewards.forEach(addPendingReward);
+            }
+        });
+    }
+
+    // 3. Process achievements for unclaimed tiers
+    const unclaimedAchievements = [];
+    const rawAchievements = data.achievements || [];
+    if (Array.isArray(rawAchievements)) {
+        rawAchievements.forEach(ach => {
+            if (ach && ach.name) {
+                const tier = typeof ach.tier === 'number' ? ach.tier : 0;
+                const claimedTier = typeof ach.claimedTier === 'number' ? ach.claimedTier : 0;
+                if (tier > claimedTier || ach.hasUnclaimedReward) {
+                    unclaimedAchievements.push({
+                        name: ach.name,
+                        tier,
+                        claimedTier,
+                        ...ach
+                    });
+                }
             }
         });
     }
@@ -741,7 +808,10 @@ async function getUserInventoryAndGems(customToken, customUserId) {
         streak: data.streakData?.currentStreak?.length || 0,
         streakData: data.streakData || null,
         rewards: data.rewards || null,
-        pendingRewards
+        rewardBundles: data.rewardBundles || null,
+        achievements: data.achievements || null,
+        pendingRewards,
+        unclaimedAchievements
     };
 }
 
@@ -751,7 +821,10 @@ async function getUserInventoryAndGems(customToken, customUserId) {
 async function claimGemReward(headers, userId, rewardId, languages = {}) {
     const fromLanguage = languages.fromLanguage || 'en';
     const learningLanguage = languages.learningLanguage || 'fr';
-    const url = `https://www.duolingo.com/2017-06-30/users/${userId}/rewards/${encodeURIComponent(rewardId)}`;
+    const endpoints = [
+        `https://www.duolingo.com/2017-06-30/users/${userId}/rewards/${encodeURIComponent(rewardId)}`,
+        `https://www.duolingo.com/2023-05-23/users/${userId}/rewards/${encodeURIComponent(rewardId)}`
+    ];
 
     const payload = {
         consumed: true,
@@ -759,17 +832,26 @@ async function claimGemReward(headers, userId, rewardId, languages = {}) {
         learningLanguage
     };
 
-    const res = await fetch(url, {
-        headers,
-        method: 'PATCH',
-        body: JSON.stringify(payload)
-    });
-
-    if (res.ok) {
+    let lastError = null;
+    for (const url of endpoints) {
         try {
-            return await res.json();
-        } catch {
-            return { ok: true };
+            const res = await fetch(url, {
+                headers,
+                method: 'PATCH',
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                try {
+                    return await res.json();
+                } catch {
+                    return { ok: true };
+                }
+            }
+            const text = await res.text();
+            lastError = new Error(`Failed to claim reward ${rewardId} (HTTP ${res.status}): ${text}`);
+        } catch (err) {
+            lastError = err;
         }
     }
 
@@ -782,14 +864,48 @@ async function claimGemReward(headers, userId, rewardId, languages = {}) {
             body: JSON.stringify(payload)
         });
         if (altRes.ok) {
-            return await altRes.json();
+            return await altRes.json().catch(() => ({ ok: true }));
         }
     } catch {
         // fallback error handled below
     }
 
-    const text = await res.text();
-    throw new Error(`Failed to claim reward ${rewardId} (HTTP ${res.status}): ${text}`);
+    if (lastError) throw lastError;
+    throw new Error(`Failed to claim reward ${rewardId}`);
+}
+
+/**
+ * Claims an achievement tier reward via Duolingo achievements PATCH endpoint
+ */
+async function claimAchievement(headers, userId, achievementName, languages = {}) {
+    const fromLanguage = languages.fromLanguage || 'en';
+    const learningLanguage = languages.learningLanguage || 'es';
+    const payload = {
+        claimed: true,
+        fromLanguage,
+        learningLanguage
+    };
+
+    const endpoints = [
+        `https://www.duolingo.com/2017-06-30/users/${userId}/achievements/${encodeURIComponent(achievementName)}`,
+        `https://www.duolingo.com/2023-05-23/users/${userId}/achievements/${encodeURIComponent(achievementName)}/claim`
+    ];
+
+    for (const url of endpoints) {
+        try {
+            const res = await fetch(url, {
+                headers,
+                method: 'PATCH',
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                return await res.json().catch(() => ({ ok: true }));
+            }
+        } catch {
+            // try next endpoint
+        }
+    }
+    return null;
 }
 
 /**
@@ -868,7 +984,9 @@ module.exports = {
     getLeaderboardStatus,
     getUserInventoryAndGems,
     claimGemReward,
+    claimAchievement,
     purchaseShopItem,
+    sleep,
     removeQuotes: cleanString,
     // Dynamic backward-compatible getter for legacy code
     get headers() {

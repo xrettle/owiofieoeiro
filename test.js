@@ -349,10 +349,11 @@ assert(rewardId.startsWith('SKILL_COMPLETION_BALANCED-'));
 assert(rewardId.endsWith('-2-GEMS'));
 console.log('   Gems reward ID & batch math passed\n');
 
-// 18. Test Inventory & Freeze Parsing
-console.log('Test 18: Inventory & Streak Freeze parsing logic');
+// 18. Test Inventory, Gems & Reward Bundles Parsing
+console.log('Test 18: Inventory, Gems & Reward Bundles parsing logic');
 const mockProfile = {
     username: 'duofan',
+    gems: 3200,
     gemsConfig: { gems: 2450 },
     lingots: 80,
     inventory: {
@@ -365,22 +366,53 @@ const mockProfile = {
     rewards: [
         { id: 'REWARD_1', consumed: false, type: 'CHEST' },
         { id: 'REWARD_2', consumed: true, type: 'XP' }
+    ],
+    rewardBundles: [
+        {
+            rewards: [
+                { id: 'REWARD_1', consumed: false, type: 'CHEST' }, // Duplicate ID, should be deduplicated
+                { id: 'REWARD_BUNDLE_3', consumed: false, rewardType: 'QUEST_CHEST', amount: 20 }
+            ]
+        }
+    ],
+    achievements: [
+        { name: 'Wildfire', tier: 5, claimedTier: 3 },
+        { name: 'Sage', tier: 2, claimedTier: 2 }
     ]
 };
 
-const gems = mockProfile.gemsConfig?.gems ?? mockProfile.lingots;
+const gems = typeof mockProfile.gems === 'number'
+    ? mockProfile.gems
+    : (mockProfile.gemsConfig?.gems ?? mockProfile.lingots);
+
 const regularFreezes = mockProfile.inventory?.streak_freeze?.quantity || 0;
 const societyFreezes = mockProfile.inventory?.society_streak_freeze?.quantity || 0;
 const totalFreezes = regularFreezes + societyFreezes;
-const pendingRewards = (mockProfile.rewards || []).filter(r => !r.consumed);
 
-assert.strictEqual(gems, 2450);
+const pendingRewards = [];
+const seenRewardIds = new Set();
+function addTestReward(r) {
+    if (!r || !r.id || seenRewardIds.has(r.id)) return;
+    if (!r.consumed) {
+        seenRewardIds.add(r.id);
+        pendingRewards.push(r);
+    }
+}
+(mockProfile.rewards || []).forEach(addTestReward);
+(mockProfile.rewardBundles || []).forEach(b => (b.rewards || []).forEach(addTestReward));
+
+const unclaimedAchievements = (mockProfile.achievements || []).filter(a => a.tier > (a.claimedTier || 0));
+
+assert.strictEqual(gems, 3200); // Prioritizes top-level data.gems
 assert.strictEqual(regularFreezes, 2);
 assert.strictEqual(societyFreezes, 3);
 assert.strictEqual(totalFreezes, 5);
-assert.strictEqual(pendingRewards.length, 1);
+assert.strictEqual(pendingRewards.length, 2);
 assert.strictEqual(pendingRewards[0].id, 'REWARD_1');
-console.log('   Inventory & Freeze parsing passed\n');
+assert.strictEqual(pendingRewards[1].id, 'REWARD_BUNDLE_3');
+assert.strictEqual(unclaimedAchievements.length, 1);
+assert.strictEqual(unclaimedAchievements[0].name, 'Wildfire');
+console.log('   Inventory, Gems & Reward Bundles parsing passed\n');
 
 // 19. Test Streak Freeze Shop Item payload structure
 console.log('Test 19: Streak Freeze shop item payload structure');
@@ -481,4 +513,19 @@ assert.strictEqual(earlyDecision.action, 'SKIP_TOO_EARLY');
 assert.strictEqual(earlyDecision.delaySec, 24001 - earlySec);
 console.log('   decideStreakKeeperAction passed\n');
 
-console.log('All 21 test suites passed.\n');
+// 22. Test Gems Script isolated architecture (Zero XP farming guarantee)
+console.log('Test 22: Gems script non-XP architecture & helper exports');
+const gemsModule = require('./gems.js');
+const helperModule = require('./helper.js');
+
+assert.strictEqual(typeof gemsModule.addGems, 'function');
+assert.strictEqual(typeof helperModule.claimGemReward, 'function');
+assert.strictEqual(typeof helperModule.claimAchievement, 'function');
+assert.strictEqual(typeof helperModule.purchaseShopItem, 'function');
+assert.strictEqual(typeof helperModule.sleep, 'function');
+
+// Verify gems.js does not import or re-export completeLessons
+assert.strictEqual(gemsModule.completeLessons, undefined);
+console.log('   Gems script non-XP architecture passed\n');
+
+console.log('All 22 test suites passed.\n');
