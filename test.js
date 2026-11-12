@@ -580,4 +580,61 @@ assert.strictEqual(HARD_LIMIT_TOTAL_SEC, 21 * 3600); // 75600 seconds = 9:00 PM 
 assert.strictEqual(gemsModule.completeLessons, undefined);
 console.log('   Gems script non-XP architecture & Hard Limit exports passed\n');
 
-console.log('All 22 test suites passed.\n');
+// 23. Test Extra Items Catalog & Claimer Architecture
+console.log('Test 23: Duolingo Locker Room Items Catalog & Item Claimer');
+const {
+    ITEMS_CATALOG,
+    CATEGORIES,
+    getItemById,
+    getItemsByCategory,
+    searchItems
+} = require('./items-catalog.js');
+const { claimItem, claimBatch } = require('./item-claimer.js');
+
+// Verify Catalog structure and uniqueness
+assert.ok(Array.isArray(ITEMS_CATALOG));
+assert.ok(ITEMS_CATALOG.length >= 25, 'Catalog should contain at least 25 items');
+
+const idSet = new Set();
+for (const item of ITEMS_CATALOG) {
+    assert.ok(item.id, 'Item must have an id');
+    assert.ok(item.name, 'Item must have a name');
+    assert.ok(item.category, 'Item must have a category');
+    assert.ok(item.type, 'Item must specify a type');
+    assert.ok(!idSet.has(item.id), `Duplicate item id detected: ${item.id}`);
+    idSet.add(item.id);
+}
+
+// Verify categories
+assert.ok(Array.isArray(CATEGORIES));
+assert.ok(CATEGORIES.some(c => c.id === 'all'));
+assert.ok(CATEGORIES.some(c => c.id === 'avatars'));
+assert.ok(CATEGORIES.some(c => c.id === 'suits'));
+assert.ok(CATEGORIES.some(c => c.id === 'banners'));
+assert.ok(CATEGORIES.some(c => c.id === 'protection'));
+assert.ok(CATEGORIES.some(c => c.id === 'chests'));
+
+// Verify helper lookup functions
+const hotDog = getItemById('avatar_skin_hot_dog');
+assert.ok(hotDog, 'Hot Dog skin should exist in catalog');
+assert.strictEqual(hotDog.name, 'Hot Dog Duo');
+assert.strictEqual(hotDog.category, 'avatars');
+
+const suits = getItemsByCategory('suits');
+assert.ok(suits.length >= 6, 'Should have multiple country suits');
+assert.ok(suits.every(s => s.category === 'suits'));
+
+const searchResults = searchItems('brazil');
+assert.ok(searchResults.length >= 1);
+assert.strictEqual(searchResults[0].id, 'avatar_skin_world_cup_br');
+
+const emptySearch = searchItems('');
+assert.strictEqual(emptySearch.length, ITEMS_CATALOG.length);
+
+// Verify Item Claimer exports
+assert.strictEqual(typeof claimItem, 'function');
+assert.strictEqual(typeof claimBatch, 'function');
+
+console.log('   Duolingo Locker Room Items Catalog & Claimer passed\n');
+
+console.log('All 23 test suites passed.\n');

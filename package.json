@@ -9,6 +9,8 @@
     "league": "node league-checker.js",
     "gems": "node gems.js",
     "freeze": "node streak-freeze.js",
+    "ui": "node server.js",
+    "server": "node server.js",
     "xp": "node xp.js",
     "revive": "node revive.js",
     "unlimitedhearts": "node unlimitedhearts.js",

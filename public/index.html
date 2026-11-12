@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duolingo Locker Room - Extra Items & Outfits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #F7F7F7;
+            --bg-card: #FFFFFF;
+            --text-main: #3C3C3C;
+            --text-muted: #777777;
+            --text-light: #AFAFAF;
+            --border-subtle: #E5E5E5;
+            --border-dark: #CECECE;
+
+            /* Duolingo Brand Palette */
+            --duo-green: #58CC02;
+            --duo-green-dark: #46A302;
+            --duo-green-shadow: #58A700;
+            --duo-green-light: #EBF8DC;
+            --duo-blue: #1CB0F6;
+            --duo-blue-dark: #1899D6;
+            --duo-blue-light: #DDF4FF;
+            --duo-gold: #FFC800;
+            --duo-gold-dark: #E5A500;
+            --duo-gold-light: #FFF8D6;
+            --duo-red: #FF4B4B;
+            --duo-red-dark: #EA2B2B;
+            --duo-red-light: #FFDFDF;
+            --duo-purple: #CE82FF;
+            --duo-purple-light: #F4E5FF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 120px;
+        }
+
+        /* Top Navigation Bar */
+        header {
+            background: var(--bg-card);
+            border-bottom: 2px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 12px 24px;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .logo-icon {
+            font-size: 32px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 0 rgba(0,0,0,0.08));
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: var(--duo-green-dark);
+        }
+
+        .logo-text span {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .account-pills {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #FFFFFF;
+            border: 2px solid var(--border-subtle);
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+            box-shadow: 0 2px 0 var(--border-subtle);
+            transition: all 0.15s ease;
+        }
+
+        .pill.clickable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .pill.clickable:hover {
+            border-color: var(--duo-blue);
+            background: var(--duo-blue-light);
+        }
+
+        .pill-token-active {
+            border-color: #BDE4A7;
+            background: #F4FBEF;
+            color: var(--duo-green-dark);
+        }
+
+        /* Main Container */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 32px 24px;
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-bottom: 28px;
+        }
+
+        .hero h2 {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            font-size: 15px;
+            color: var(--text-muted);
+            font-weight: 600;
+            max-width: 680px;
+        }
+
+        /* Filter Controls */
+        .controls-panel {
+            background: var(--bg-card);
+            border: 2px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 0 var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .categories-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .category-btn {
+            background: #FFFFFF;
+            border: 2px solid var(--border-subtle);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            box-shadow: 0 2px 0 var(--border-subtle);
+            transition: all 0.12s ease;
+        }
+
+        .category-btn:hover {
+            border-color: var(--border-dark);
+            color: var(--text-main);
+        }
+
+        .category-btn.active {
+            background: var(--duo-green-light);
+            border-color: var(--duo-green);
+            color: var(--duo-green-dark);
+            box-shadow: 0 2px 0 var(--duo-green-shadow);
+        }
+
+        .search-actions-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 260px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--bg-page);
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 10px 14px 10px 38px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--duo-blue);
+            background: #FFFFFF;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .selection-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-text {
+            background: none;
+            border: none;
+            color: var(--duo-blue-dark);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: background 0.12s ease;
+        }
+
+        .btn-text:hover {
+            background: var(--duo-blue-light);
+        }
+
+        /* Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 0 var(--border-subtle);
+            transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .item-card:hover {
+            border-color: var(--border-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 var(--border-dark);
+        }
+
+        .item-card.selected {
+            background: #FAFFF6;
+            border-color: var(--duo-green);
+            box-shadow: 0 4px 0 var(--duo-green-shadow);
+        }
+
+        .item-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .item-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: var(--bg-page);
+            border: 2px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 2px 0 var(--border-subtle);
+            transition: transform 0.15s ease;
+        }
+
+        .item-card:hover .item-icon-box {
+            transform: scale(1.05);
+        }
+
+        .rarity-badge {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .rarity-Legendary { background: var(--duo-gold-light); color: var(--duo-gold-dark); border: 1px solid #FFE48B; }
+        .rarity-Mythic { background: var(--duo-purple-light); color: var(--duo-purple); border: 1px solid #E4B5FF; }
+        .rarity-Epic { background: var(--duo-blue-light); color: var(--duo-blue-dark); border: 1px solid #B8E4FF; }
+        .rarity-Rare { background: var(--duo-green-light); color: var(--duo-green-dark); border: 1px solid #C4ED9E; }
+        .rarity-Essential { background: #F0F0F0; color: #555555; border: 1px solid #DDDDDD; }
+        .rarity-Common { background: #F0F0F0; color: #777777; border: 1px solid #DDDDDD; }
+
+        .item-body {
+            flex: 1;
+            margin-bottom: 16px;
+        }
+
+        .item-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            line-height: 1.25;
+        }
+
+        .item-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .item-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        .item-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .checkbox-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-muted);
+            transition: color 0.12s ease;
+        }
+
+        .item-card.selected .checkbox-pill {
+            color: var(--duo-green-dark);
+        }
+
+        .custom-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-subtle);
+            border-radius: 6px;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 0 var(--border-subtle);
+            transition: all 0.12s ease;
+        }
+
+        .item-card.selected .custom-checkbox {
+            background: var(--duo-green);
+            border-color: var(--duo-green);
+            box-shadow: 0 2px 0 var(--duo-green-shadow);
+        }
+
+        .custom-checkbox::after {
+            content: "✓";
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 900;
+            display: none;
+        }
+
+        .item-card.selected .custom-checkbox::after {
+            display: block;
+        }
+
+        /* Sticky Action Dock */
+        .bottom-dock {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-top: 2px solid var(--border-subtle);
+            padding: 16px 24px;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+            z-index: 40;
+            transform: translateY(120%);
+            transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .bottom-dock.active {
+            transform: translateY(0);
+        }
+
+        .dock-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .dock-summary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dock-count-badge {
+            background: var(--duo-green-light);
+            border: 2px solid var(--duo-green);
+            color: var(--duo-green-dark);
+            font-size: 15px;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 999px;
+            box-shadow: 0 2px 0 var(--duo-green-shadow);
+        }
+
+        .dock-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .dock-text small {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .btn-claim {
+            background: var(--duo-green);
+            color: #FFFFFF;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 4px 0 var(--duo-green-shadow);
+            transition: all 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-claim:hover {
+            background: #52BF00;
+        }
+
+        .btn-claim:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--duo-green-shadow);
+        }
+
+        .btn-claim:disabled {
+            background: #CCCCCC;
+            box-shadow: 0 4px 0 #AAAAAA;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            border: 2px solid var(--border-subtle);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+            max-width: 540px;
+            width: 100%;
+            padding: 28px;
+            position: relative;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: popIn 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--text-main);
+        }
+
+        .btn-close {
+            background: var(--bg-page);
+            border: 2px solid var(--border-subtle);
+            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .btn-close:hover {
+            border-color: var(--border-dark);
+            color: var(--text-main);
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 4px;
+        }
+
+        .claim-progress-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .claim-progress-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-page);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .claim-item-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .claim-status {
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .status-success {
+            background: var(--duo-green-light);
+            color: var(--duo-green-dark);
+        }
+
+        .status-pending {
+            background: #FFF8D6;
+            color: var(--duo-gold-dark);
+        }
+
+        .status-error {
+            background: #FFDFDF;
+            color: var(--duo-red-dark);
+        }
+
+        /* Token Entry Modal */
+        .token-input-group {
+            margin-bottom: 16px;
+        }
+
+        .token-input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .token-input-group textarea,
+        .token-input-group input {
+            width: 100%;
+            background: var(--bg-page);
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--text-main);
+            outline: none;
+            resize: vertical;
+        }
+
+        .token-input-group textarea:focus,
+        .token-input-group input:focus {
+            border-color: var(--duo-blue);
+            background: #FFFFFF;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state h4 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="header-inner">
+            <a href="#" class="logo-group">
+                <span class="logo-icon">🦉</span>
+                <div class="logo-text">
+                    <h1>Duolingo Locker Room</h1>
+                    <span>Extra Items &amp; Wardrobe</span>
+                </div>
+            </a>
+
+            <div class="account-pills" id="accountPills">
+                <div class="pill pill-token-active" id="userPill">
+                    <span>👤</span>
+                    <span id="userNameText">Connecting...</span>
+                </div>
+                <div class="pill" id="streakPill">
+                    <span>🔥</span>
+                    <span id="streakCount">-- days</span>
+                </div>
+                <div class="pill" id="gemsPill">
+                    <span>💎</span>
+                    <span id="gemsCount">-- gems</span>
+                </div>
+                <div class="pill" id="freezesPill">
+                    <span>🧊</span>
+                    <span id="freezesCount">--/5 freezes</span>
+                </div>
+                <button class="pill clickable" id="btnSettings" onclick="openTokenModal()">
+                    <span>⚙️</span>
+                    <span>Credentials</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="hero">
+            <h2>Claim &amp; Equip Extra Items</h2>
+            <p>Browse official outfits, world tournament jerseys, grandmaster chess ranks, and streak protection items directly credited to your Duolingo account.</p>
+        </div>
+
+        <!-- Controls: Categories, Search, Selection -->
+        <div class="controls-panel">
+            <div class="categories-row" id="categoriesRow">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="search-actions-row">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by name, country, or keyword..." oninput="handleSearch(this.value)">
+                </div>
+
+                <div class="selection-actions">
+                    <button class="btn-text" onclick="selectAllFiltered()">Select All</button>
+                    <button class="btn-text" onclick="clearSelection()">Clear Selection</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Grid -->
+        <div class="items-grid" id="itemsGrid">
+            <!-- Injected via JS -->
+        </div>
+    </main>
+
+    <!-- Sticky Bottom Action Dock -->
+    <div class="bottom-dock" id="bottomDock">
+        <div class="dock-inner">
+            <div class="dock-summary">
+                <span class="dock-count-badge" id="dockSelectedBadge">0 items</span>
+                <div class="dock-text">
+                    <span id="dockSelectedText">0 items selected</span>
+                    <small>Items will be claimed directly via Duolingo rewards API</small>
+                </div>
+            </div>
+            <button class="btn-claim" id="btnClaimSelected" onclick="claimSelectedItems()">
+                <span>⚡</span>
+                <span id="btnClaimText">Claim &amp; Equip Selected</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Claim Progress Modal -->
+    <div class="modal-overlay" id="claimModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Claiming Items</h3>
+                <button class="btn-close" onclick="closeClaimModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="modalSubtext" style="font-size: 14px; color: var(--text-muted); font-weight: 600;">Sending signed requests to Duolingo account servers...</p>
+                <ul class="claim-progress-list" id="claimProgressList">
+                    <!-- Dynamic Progress Items -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token / Credentials Modal -->
+    <div class="modal-overlay" id="tokenModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Account Credentials</h3>
+                <button class="btn-close" onclick="closeTokenModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 14px; color: var(--text-muted); font-weight: 600; margin-bottom: 16px;">
+                    Enter your Duolingo JWT token and user ID if you wish to override the default environment credentials.
+                </p>
+                <div class="token-input-group">
+                    <label>Duolingo JWT Token (jwt_token)</label>
+                    <textarea id="modalTokenInput" rows="3" placeholder="ey..."></textarea>
+                </div>
+                <div class="token-input-group">
+                    <label>User ID (sub)</label>
+                    <input type="text" id="modalUserIdInput" placeholder="e.g. 84920194">
+                </div>
+                <button class="btn-claim" style="width: 100%; justify-content: center; margin-top: 8px;" onclick="saveCustomCredentials()">
+                    Save &amp; Reload Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let catalog = [];
+        let categories = [];
+        let selectedCategory = 'all';
+        let searchQuery = '';
+        let selectedItemIds = new Set();
+        let userProfile = null;
+        let customToken = localStorage.getItem('DUO_TOKEN') || '';
+        let customUserId = localStorage.getItem('DUO_USER_ID') || '';
+
+        // Initial Boot
+        async function init() {
+            await loadCatalog();
+            await loadProfile();
+        }
+
+        async function loadCatalog() {
+            try {
+                const res = await fetch('/api/catalog');
+                const data = await res.json();
+                catalog = data.catalog || [];
+                categories = data.categories || [];
+                renderCategories();
+                renderItems();
+            } catch (err) {
+                console.error('Failed to load catalog:', err);
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: customToken, userId: customUserId })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    userProfile = data.profile;
+                    updateProfileUI();
+                } else {
+                    const err = await res.json();
+                    document.getElementById('userNameText').innerText = 'Connect Account';
+                    console.warn(err.error);
+                }
+            } catch (err) {
+                console.warn('Could not load profile:', err.message);
+                document.getElementById('userNameText').innerText = 'Connect Account';
+            }
+        }
+
+        function updateProfileUI() {
+            if (!userProfile) return;
+            document.getElementById('userNameText').innerText = userProfile.username || 'Learner';
+            document.getElementById('streakCount').innerText = `${userProfile.streak} days`;
+            document.getElementById('gemsCount').innerText = `${Number(userProfile.gems).toLocaleString()} gems`;
+            document.getElementById('freezesCount').innerText = `${userProfile.totalFreezes}/5 freezes`;
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesRow');
+            container.innerHTML = categories.map(cat => `
+                <button class="category-btn ${cat.id === selectedCategory ? 'active' : ''}" onclick="selectCategory('${cat.id}')">
+                    <span>${cat.icon}</span>
+                    <span>${cat.label}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectCategory(id) {
+            selectedCategory = id;
+            renderCategories();
+            renderItems();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val.toLowerCase().trim();
+            renderItems();
+        }
+
+        function getFilteredItems() {
+            return catalog.filter(item => {
+                const matchCategory = selectedCategory === 'all' || item.category === selectedCategory;
+                const matchSearch = !searchQuery ||
+                    item.name.toLowerCase().includes(searchQuery) ||
+                    item.description.toLowerCase().includes(searchQuery) ||
+                    item.tag.toLowerCase().includes(searchQuery);
+                return matchCategory && matchSearch;
+            });
+        }
+
+        function renderItems() {
+            const grid = document.getElementById('itemsGrid');
+            const items = getFilteredItems();
+
+            if (items.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <h4>No items found</h4>
+                        <p>Try searching for a different country name or item keyword.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = items.map(item => {
+                const isSelected = selectedItemIds.has(item.id);
+                return `
+                    <div class="item-card ${isSelected ? 'selected' : ''}" onclick="toggleItemSelection('${item.id}')">
+                        <div class="item-header">
+                            <div class="item-icon-box">${item.icon}</div>
+                            <span class="rarity-badge rarity-${item.rarity}">${item.rarity}</span>
+                        </div>
+                        <div class="item-body">
+                            <div class="item-name">${item.name}</div>
+                            <span class="item-tag">${item.tag}</span>
+                            <div class="item-desc">${item.description}</div>
+                        </div>
+                        <div class="item-footer">
+                            <div class="checkbox-pill">
+                                <div class="custom-checkbox"></div>
+                                <span>${isSelected ? 'Selected' : 'Equip / Select'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateDock();
+        }
+
+        function toggleItemSelection(id) {
+            if (selectedItemIds.has(id)) {
+                selectedItemIds.delete(id);
+            } else {
+                selectedItemIds.add(id);
+            }
+            renderItems();
+        }
+
+        function selectAllFiltered() {
+            const items = getFilteredItems();
+            items.forEach(i => selectedItemIds.add(i.id));
+            renderItems();
+        }
+
+        function clearSelection() {
+            selectedItemIds.clear();
+            renderItems();
+        }
+
+        function updateDock() {
+            const dock = document.getElementById('bottomDock');
+            const count = selectedItemIds.size;
+
+            if (count > 0) {
+                dock.classList.add('active');
+                document.getElementById('dockSelectedBadge').innerText = `${count} ${count === 1 ? 'item' : 'items'}`;
+                document.getElementById('dockSelectedText').innerText = `${count} ${count === 1 ? 'item' : 'items'} selected for unlocking`;
+                document.getElementById('btnClaimText').innerText = `Claim & Equip Selected (${count})`;
+            } else {
+                dock.classList.remove('active');
+            }
+        }
+
+        async function claimSelectedItems() {
+            if (selectedItemIds.size === 0) return;
+            const itemsToClaim = Array.from(selectedItemIds);
+
+            // Open Progress Modal
+            document.getElementById('claimModal').classList.add('active');
+            document.getElementById('modalTitle').innerText = 'Unlocking Items';
+            document.getElementById('modalSubtext').innerText = `Submitting claims for ${itemsToClaim.length} item(s)...`;
+
+            const list = document.getElementById('claimProgressList');
+            list.innerHTML = itemsToClaim.map(id => {
+                const item = catalog.find(i => i.id === id);
+                return `
+                    <li class="claim-progress-item" id="progress-${id}">
+                        <div class="claim-item-title">
+                            <span>${item ? item.icon : '✨'}</span>
+                            <span>${item ? item.name : id}</span>
+                        </div>
+                        <span class="claim-status status-pending">Queued</span>
+                    </li>
+                `;
+            }).join('');
+
+            try {
+                const res = await fetch('/api/claim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: customToken,
+                        userId: customUserId,
+                        itemIds: itemsToClaim
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    userProfile = data.refreshedProfile || userProfile;
+                    updateProfileUI();
+
+                    // Update item statuses
+                    (data.results || []).forEach(r => {
+                        const el = document.getElementById(`progress-${r.itemId || (r.item && r.item.id)}`);
+                        if (el) {
+                            const statusSpan = el.querySelector('.claim-status');
+                            if (r.success) {
+                                statusSpan.className = 'claim-status status-success';
+                                statusSpan.innerText = 'Unlocked ✓';
+                            } else {
+                                statusSpan.className = 'claim-status status-error';
+                                statusSpan.innerText = r.message ? r.message.substring(0, 24) : 'Already Owned';
+                            }
+                        }
+                    });
+
+                    document.getElementById('modalTitle').innerText = 'Claim Complete!';
+                    document.getElementById('modalSubtext').innerText = 'Selected items have been processed and your inventory is updated.';
+                    selectedItemIds.clear();
+                    renderItems();
+                } else {
+                    const err = await res.json();
+                    alert(`Error claiming items: ${err.error}`);
+                    closeClaimModal();
+                }
+            } catch (err) {
+                alert(`Network error: ${err.message}`);
+                closeClaimModal();
+            }
+        }
+
+        function closeClaimModal() {
+            document.getElementById('claimModal').classList.remove('active');
+        }
+
+        function openTokenModal() {
+            document.getElementById('modalTokenInput').value = customToken;
+            document.getElementById('modalUserIdInput').value = customUserId;
+            document.getElementById('tokenModal').classList.add('active');
+        }
+
+        function closeTokenModal() {
+            document.getElementById('tokenModal').classList.remove('active');
+        }
+
+        function saveCustomCredentials() {
+            customToken = document.getElementById('modalTokenInput').value.trim();
+            customUserId = document.getElementById('modalUserIdInput').value.trim();
+            localStorage.setItem('DUO_TOKEN', customToken);
+            localStorage.setItem('DUO_USER_ID', customUserId);
+            closeTokenModal();
+            loadProfile();
+        }
+
+        // Run
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
