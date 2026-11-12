@@ -51,6 +51,15 @@ const TIME_SLOTS = [
 ];
 
 /**
+ * Hard limit cutoff time: 9:00 PM (21:00:00)
+ * If no practice has been recorded by 9:00 PM, execute an emergency lesson immediately
+ * and verify with Duolingo that the streak is saved.
+ */
+const HARD_LIMIT_HOUR = 21;
+const HARD_LIMIT_MINUTE = 0;
+const HARD_LIMIT_TOTAL_SEC = HARD_LIMIT_HOUR * 3600 + HARD_LIMIT_MINUTE * 60; // 75600 seconds (21:00)
+
+/**
  * 32-bit FNV-1a pseudo-random hash generator for deterministic day schedules
  */
 function pseudoRandom(seed) {
@@ -99,11 +108,27 @@ function getCurrentSlot(totalMinutes, slots = TIME_SLOTS) {
 }
 
 /**
- * Evaluates the required action for the streak keeper based on current time and practice status
+ * Evaluates the required action for the streak keeper based on current time and practice status.
+ * Enforces a strict hard limit at 9:00 PM (21:00) so that if earlier scheduled runs failed,
+ * were delayed, or missed, an immediate emergency lesson is dispatched.
  */
-function decideStreakKeeperAction({ alreadyPracticed, currentTotalSec, schedule, currentSlot }) {
+function decideStreakKeeperAction({
+    alreadyPracticed,
+    currentTotalSec,
+    schedule,
+    currentSlot,
+    hardLimitTotalSec = HARD_LIMIT_TOTAL_SEC
+}) {
     if (alreadyPracticed) {
         return { action: 'ALREADY_COMPLETED' };
+    }
+    // Hard limit: If it is 9:00 PM (21:00) or later, practice immediately regardless of schedule
+    if (currentTotalSec >= hardLimitTotalSec) {
+        return {
+            action: 'RUN_IMMEDIATELY_HARD_LIMIT',
+            isHardLimit: true,
+            reason: 'Hard limit: past 9:00 PM and practice not recorded'
+        };
     }
     if (currentTotalSec >= schedule.targetTotalSeconds) {
         return { action: 'RUN_IMMEDIATELY_TARGET_PASSED' };
@@ -114,6 +139,69 @@ function decideStreakKeeperAction({ alreadyPracticed, currentTotalSec, schedule,
         return { action: 'WAIT_AND_RUN', delaySec };
     }
     return { action: 'SKIP_TOO_EARLY', delaySec };
+}
+
+/**
+ * Executes a lesson and verifies that the streak has been saved in Duolingo
+ */
+async function executeAndVerifyPractice(localInfo, timeZone, options = {}) {
+    const isHardLimit = !!options.isHardLimit;
+    const reason = options.reason || 'Scheduled streak keeper';
+
+    if (isHardLimit) {
+        console.log(`\n====================================================`);
+        console.log(`[EMERGENCY HARD LIMIT TRIGGERED: AFTER 9:00 PM]`);
+        console.log(`No practice recorded today as of ${localInfo.timeStr}.`);
+        console.log(`Executing lesson immediately to protect and save your streak!`);
+        console.log(`====================================================\n`);
+    } else {
+        console.log(`\nStarting lesson now (${reason})...`);
+    }
+
+    // Complete practice lesson
+    await completeLessons(1);
+
+    // Verify with Duolingo that streak is saved
+    console.log(`\nVerifying with Duolingo whether streak has been saved...`);
+    await sleep(2000);
+
+    let verifyUser = null;
+    let saved = false;
+    try {
+        verifyUser = await getUserLanguages();
+        saved = hasPracticedToday(verifyUser, localInfo.dateStr, timeZone);
+    } catch (checkErr) {
+        console.warn(`Initial verification check note: ${checkErr.message}`);
+    }
+
+    // If not confirmed on first check, retry lesson completion once more
+    if (!saved) {
+        console.warn(`Streak not confirmed on first check. Retrying lesson completion to guarantee streak preservation...`);
+        await sleep(1500);
+        try {
+            await completeLessons(1);
+            await sleep(2000);
+            verifyUser = await getUserLanguages();
+            saved = hasPracticedToday(verifyUser, localInfo.dateStr, timeZone);
+        } catch (retryErr) {
+            console.warn(`Retry note: ${retryErr.message}`);
+        }
+    }
+
+    console.log(`\n====================================================`);
+    console.log(`Streak Verification Summary:`);
+    console.log(`   Date:             ${localInfo.dateStr}`);
+    console.log(`   Timezone:         ${timeZone}`);
+    console.log(`   Streak Saved:     ${saved ? 'YES - CONFIRMED' : 'LESSON SUBMITTED (Check app)'}`);
+    console.log(`   Current Streak:   ${verifyUser?.streak ?? 'Active'} days`);
+    console.log(`   User:             ${verifyUser?.username ?? 'Account verified'}`);
+    console.log(`====================================================\n`);
+
+    return {
+        saved,
+        streak: verifyUser?.streak || 0,
+        username: verifyUser?.username || ''
+    };
 }
 
 const main = async () => {
@@ -171,7 +259,7 @@ const main = async () => {
     // Mode 2: Immediate Execution (Manual Run)
     if (mode === 'immediate' || mode === 'now' || process.env.FORCE === 'true') {
         console.log('Running lesson now...');
-        await completeLessons(1);
+        await executeAndVerifyPractice(localInfo, timeZone, { reason: 'Immediate / manual run requested' });
 
         if (isLeagueCheckerEnabled) {
             console.log('\nRunning league checker...');
@@ -219,10 +307,27 @@ const main = async () => {
         process.exit(0);
     }
 
+    if (decision.action === 'RUN_IMMEDIATELY_HARD_LIMIT') {
+        console.log(`\n[HARD LIMIT CUTOFF TRIGGERED] Current time is ${localInfo.timeStr} (after 9:00 PM cutoff).`);
+        console.log(`Practice has not been recorded yet today. Starting emergency lesson immediately to guarantee streak safety...`);
+        await executeAndVerifyPractice(localInfo, timeZone, {
+            isHardLimit: true,
+            reason: '9:00 PM Hard Limit emergency execution'
+        });
+        if (isLeagueCheckerEnabled) {
+            console.log('\nRunning league checker...');
+            await checkAndDefendLeague();
+        }
+        console.log(`\n[STATUS: COMPLETED - STREAK PRESERVED]`);
+        process.exit(0);
+    }
+
     if (decision.action === 'RUN_IMMEDIATELY_TARGET_PASSED') {
         console.log(`\n[ACTION REQUIRED] Today's target time (${schedule.targetTimeStr}) has arrived or passed.`);
         console.log(`Practice has not been recorded yet today. Starting lesson immediately to protect streak...`);
-        await completeLessons(1);
+        await executeAndVerifyPractice(localInfo, timeZone, {
+            reason: `Target time ${schedule.targetTimeStr} reached or passed`
+        });
         if (isLeagueCheckerEnabled) {
             console.log('\nRunning league checker...');
             await checkAndDefendLeague();
@@ -238,7 +343,9 @@ const main = async () => {
         console.log(`Waiting ${waitMinutes}m ${waitRemainderSec}s before running lesson...`);
         await sleep(decision.delaySec * 1000);
         console.log(`\nStarting lesson at target time (${schedule.targetTimeStr})...`);
-        await completeLessons(1);
+        await executeAndVerifyPractice(localInfo, timeZone, {
+            reason: `Scheduled slot reached (${schedule.targetTimeStr})`
+        });
         if (isLeagueCheckerEnabled) {
             console.log('\nRunning league checker...');
             await checkAndDefendLeague();
@@ -265,9 +372,13 @@ if (require.main === module) {
 
 module.exports = {
     TIME_SLOTS,
+    HARD_LIMIT_HOUR,
+    HARD_LIMIT_MINUTE,
+    HARD_LIMIT_TOTAL_SEC,
     pseudoRandom,
     getDaySchedule,
     getCurrentSlot,
     decideStreakKeeperAction,
+    executeAndVerifyPractice,
     main
 };

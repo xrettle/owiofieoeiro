@@ -25,10 +25,12 @@ const {
 
 const {
     TIME_SLOTS,
+    HARD_LIMIT_TOTAL_SEC,
     pseudoRandom,
     getDaySchedule,
     getCurrentSlot,
-    decideStreakKeeperAction
+    decideStreakKeeperAction,
+    executeAndVerifyPractice
 } = require('./streak-keeper.js');
 
 const {
@@ -527,9 +529,41 @@ const earlyDecision = decideStreakKeeperAction({
 });
 assert.strictEqual(earlyDecision.action, 'SKIP_TOO_EARLY');
 assert.strictEqual(earlyDecision.delaySec, 24001 - earlySec);
+
+// Scenario F: Hard Limit Triggered (Past 9:00 PM / 21:00, practice not done)
+const pastNineSec = 21 * 3600 + 5 * 60; // 21:05 (9:05 PM)
+const hardLimitDecision = decideStreakKeeperAction({
+    alreadyPracticed: false,
+    currentTotalSec: pastNineSec,
+    schedule: mockMorningSchedule,
+    currentSlot: null
+});
+assert.strictEqual(hardLimitDecision.action, 'RUN_IMMEDIATELY_HARD_LIMIT');
+assert.strictEqual(hardLimitDecision.isHardLimit, true);
+
+// Scenario G: Past 9:00 PM, but practice was already completed earlier
+const pastNineDoneDecision = decideStreakKeeperAction({
+    alreadyPracticed: true,
+    currentTotalSec: pastNineSec,
+    schedule: mockMorningSchedule,
+    currentSlot: null
+});
+assert.strictEqual(pastNineDoneDecision.action, 'ALREADY_COMPLETED');
+
+// Scenario H: Late night fallback (11:30 PM), practice not done
+const lateNightSec = 23 * 3600 + 30 * 60; // 23:30 (11:30 PM)
+const lateNightDecision = decideStreakKeeperAction({
+    alreadyPracticed: false,
+    currentTotalSec: lateNightSec,
+    schedule: mockMorningSchedule,
+    currentSlot: null
+});
+assert.strictEqual(lateNightDecision.action, 'RUN_IMMEDIATELY_HARD_LIMIT');
+assert.strictEqual(lateNightDecision.isHardLimit, true);
+
 console.log('   decideStreakKeeperAction passed\n');
 
-// 22. Test Gems Script isolated architecture (Zero XP farming guarantee)
+// 22. Test Gems Script isolated architecture & Streak Keeper hard limit exports
 console.log('Test 22: Gems script non-XP architecture & helper exports');
 const gemsModule = require('./gems.js');
 const helperModule = require('./helper.js');
@@ -539,9 +573,11 @@ assert.strictEqual(typeof helperModule.claimGemReward, 'function');
 assert.strictEqual(typeof helperModule.claimAchievement, 'function');
 assert.strictEqual(typeof helperModule.purchaseShopItem, 'function');
 assert.strictEqual(typeof helperModule.sleep, 'function');
+assert.strictEqual(typeof executeAndVerifyPractice, 'function');
+assert.strictEqual(HARD_LIMIT_TOTAL_SEC, 21 * 3600); // 75600 seconds = 9:00 PM exactly
 
 // Verify gems.js does not import or re-export completeLessons
 assert.strictEqual(gemsModule.completeLessons, undefined);
-console.log('   Gems script non-XP architecture passed\n');
+console.log('   Gems script non-XP architecture & Hard Limit exports passed\n');
 
 console.log('All 22 test suites passed.\n');

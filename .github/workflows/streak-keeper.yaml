@@ -12,9 +12,18 @@ on:
     # Slot 3: Evening 08:15 PM (PDT: 03:15 UTC, PST: 04:15 UTC)
     - cron: '15 3 * * *'
     - cron: '15 4 * * *'
-    # Safety Net: Late Night 10:30 PM (PDT: 05:30 UTC, PST: 06:30 UTC)
+    # Hard Limit Cutoff: 09:05 PM (PDT: 04:05 UTC, PST: 05:05 UTC)
+    - cron: '5 4 * * *'
+    - cron: '5 5 * * *'
+    # Safety Net 1: 10:00 PM (PDT: 05:00 UTC, PST: 06:00 UTC)
+    - cron: '0 5 * * *'
+    - cron: '0 6 * * *'
+    # Safety Net 2: 10:30 PM (PDT: 05:30 UTC, PST: 06:30 UTC)
     - cron: '30 5 * * *'
     - cron: '30 6 * * *'
+    # Final Emergency Fallback: 11:15 PM (PDT: 06:15 UTC, PST: 07:15 UTC)
+    - cron: '15 6 * * *'
+    - cron: '15 7 * * *'
   workflow_dispatch:
     inputs:
       mode:
