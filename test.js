@@ -591,16 +591,20 @@ const {
 } = require('./items-catalog.js');
 const { claimItem, claimBatch } = require('./item-claimer.js');
 
-// Verify Catalog structure and uniqueness
+// Verify Catalog structure, size, and uniqueness
 assert.ok(Array.isArray(ITEMS_CATALOG));
-assert.ok(ITEMS_CATALOG.length >= 25, 'Catalog should contain at least 25 items');
+assert.ok(ITEMS_CATALOG.length >= 50, `Catalog should contain at least 50 items (got ${ITEMS_CATALOG.length})`);
 
+const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}]/u;
 const idSet = new Set();
 for (const item of ITEMS_CATALOG) {
     assert.ok(item.id, 'Item must have an id');
     assert.ok(item.name, 'Item must have a name');
     assert.ok(item.category, 'Item must have a category');
     assert.ok(item.type, 'Item must specify a type');
+    assert.ok(item.imageUrl && item.imageUrl.startsWith('https://'), `Item ${item.id} must have a valid https preview imageUrl`);
+    assert.ok(!emojiRegex.test(item.name), `Item name must not contain emojis: ${item.name}`);
+    assert.ok(!emojiRegex.test(item.description), `Item desc must not contain emojis: ${item.description}`);
     assert.ok(!idSet.has(item.id), `Duplicate item id detected: ${item.id}`);
     idSet.add(item.id);
 }
@@ -613,15 +617,23 @@ assert.ok(CATEGORIES.some(c => c.id === 'suits'));
 assert.ok(CATEGORIES.some(c => c.id === 'banners'));
 assert.ok(CATEGORIES.some(c => c.id === 'protection'));
 assert.ok(CATEGORIES.some(c => c.id === 'chests'));
+for (const cat of CATEGORIES) {
+    assert.ok(!emojiRegex.test(cat.label), `Category label must not contain emojis: ${cat.label}`);
+}
 
 // Verify helper lookup functions
+const formal = getItemById('outfit_formal');
+assert.ok(formal, 'Formal attire outfit should exist in catalog');
+assert.strictEqual(formal.name, 'Formal Attire');
+assert.strictEqual(formal.category, 'avatars');
+
 const hotDog = getItemById('avatar_skin_hot_dog');
 assert.ok(hotDog, 'Hot Dog skin should exist in catalog');
 assert.strictEqual(hotDog.name, 'Hot Dog Duo');
 assert.strictEqual(hotDog.category, 'avatars');
 
 const suits = getItemsByCategory('suits');
-assert.ok(suits.length >= 6, 'Should have multiple country suits');
+assert.ok(suits.length >= 10, 'Should have at least 10 country suits');
 assert.ok(suits.every(s => s.category === 'suits'));
 
 const searchResults = searchItems('brazil');
