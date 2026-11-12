@@ -1,0 +1,11 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Diamond Trophy Cup -->
+        <polygon points="40,12 56,22 40,36 24,22" fill="#38BDF8" stroke="#0284C7" stroke-width="1.5"/>
+        <path d="M28 26 L52 26 L48 48 L40 54 L32 48 Z" fill="#0284C7"/>
+        <!-- Trophy Handles -->
+        <path d="M28 28 C18 28 18 42 29 44" stroke="#F59E0B" stroke-width="3" fill="none"/>
+        <path d="M52 28 C62 28 62 42 51 44" stroke="#F59E0B" stroke-width="3" fill="none"/>
+        <!-- Trophy Base -->
+        <rect x="36" y="54" width="8" height="8" fill="#D97706"/>
+        <rect x="28" y="62" width="24" height="6" rx="2" fill="#F59E0B"/>
+    </svg>

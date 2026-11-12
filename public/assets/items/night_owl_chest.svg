@@ -1,0 +1,9 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Night Owl Indigo Chest -->
+        <rect x="18" y="36" width="44" height="28" rx="4" fill="#312E81" stroke="#1E1B4B" stroke-width="2"/>
+        <path d="M16 36 Q40 22 64 36 Z" fill="#4338CA" stroke="#312E81" stroke-width="2"/>
+        <rect x="36" y="34" width="8" height="12" rx="2" fill="#C7D2FE" stroke="#818CF8" stroke-width="1.5"/>
+        <circle cx="40" cy="40" r="2" fill="#1E1B4B"/>
+        <!-- Moon Emblem -->
+        <path d="M42 22 A5 5 0 1 0 42 30 A6 6 0 0 1 42 22 Z" fill="#FACC15"/>
+    </svg>

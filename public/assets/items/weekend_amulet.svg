@@ -1,0 +1,8 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Silver Chain -->
+        <path d="M26 16 C30 28 50 28 54 16" fill="none" stroke="#94A3B8" stroke-width="2"/>
+        <!-- Amulet Stone -->
+        <polygon points="40,24 54,34 50,56 40,64 30,56 26,34" fill="#6366F1" stroke="#4F46E5" stroke-width="2"/>
+        <circle cx="40" cy="44" r="8" fill="#A5B4FC"/>
+        <polygon points="40,38 43,44 40,50 37,44" fill="#312E81"/>
+    </svg>

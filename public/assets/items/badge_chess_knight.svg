@@ -1,0 +1,5 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Chess Knight Piece Silhouette -->
+        <path d="M30 64 L52 64 L50 56 C50 48 54 44 52 36 C50 30 46 22 38 18 C32 20 28 26 28 32 C32 30 36 32 34 36 C28 38 24 44 26 48 L32 48 L30 56 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="2"/>
+        <circle cx="36" cy="28" r="2" fill="#0F172A"/>
+    </svg>

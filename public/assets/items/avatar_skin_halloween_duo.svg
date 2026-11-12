@@ -1,0 +1,14 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Pumpkin Body -->
+        <ellipse cx="40" cy="40" rx="26" ry="24" fill="#F97316"/>
+        <ellipse cx="40" cy="40" rx="18" ry="23" fill="#EA580C"/>
+        <ellipse cx="40" cy="40" rx="10" ry="22" fill="#C2410C"/>
+        <!-- Pumpkin Stem -->
+        <rect x="37" y="12" width="6" height="8" rx="2" fill="#58CC02"/>
+        <!-- Carved Glowing Jack-o-Lantern Face -->
+        <polygon points="28,32 23,40 33,40" fill="#FEF08A"/>
+        <polygon points="52,32 47,40 57,40" fill="#FEF08A"/>
+        <polygon points="40,38 37,43 43,43" fill="#FEF08A"/>
+        <!-- Spooky Grin -->
+        <path d="M26 48 L30 52 L34 49 L38 53 L42 49 L46 53 L50 49 L54 48 Q40 58 26 48 Z" fill="#FEF08A"/>
+    </svg>

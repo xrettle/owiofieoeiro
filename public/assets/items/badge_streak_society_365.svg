@@ -1,0 +1,11 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Medal Ribbon -->
+        <polygon points="30,12 36,28 30,34 24,12" fill="#EF4444"/>
+        <polygon points="50,12 44,28 50,34 56,12" fill="#DC2626"/>
+        <!-- Gold Medallion -->
+        <circle cx="40" cy="44" r="20" fill="#F59E0B" stroke="#D97706" stroke-width="2"/>
+        <circle cx="40" cy="44" r="16" fill="#FBBF24"/>
+        <!-- Flame Icon & 365 -->
+        <path d="M40 32 C43 36 44 38 44 41 C44 44 42 46 40 46 C38 46 36 44 36 41 C36 38 37 36 40 32 Z" fill="#EA580C"/>
+        <text x="40" y="54" font-size="8" font-weight="900" text-anchor="middle" fill="#78350F" font-family="sans-serif">365</text>
+    </svg>

@@ -9,10 +9,8 @@
  * - Streak protection, freezes, and heart refills
  * - Timed chests and league drops
  *
- * All items use official CDN preview URLs. Zero emojis.
+ * All items use pixel-perfect, tailored vector illustrations. Zero emojis.
  */
-
-const CDN_BASE = 'https://d35aaqx5ub95lt.cloudfront.net';
 
 const ITEMS_CATALOG = [
     // ----------------------------------------------------
@@ -25,7 +23,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_FORMAL-{seed}-formal_attire',
         shopName: 'formal_attire',
-        imageUrl: `${CDN_BASE}/images/owls/14869f1103f5de3588f55271a5e478c1.svg`,
+        imageUrl: '/assets/items/outfit_formal.svg',
         tag: 'Classic Outfit',
         description: 'Dressed in a sharp tailored black tuxedo with bow tie and polished lapels.',
         rarity: 'Legendary'
@@ -37,7 +35,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_GOLD-{seed}-champagne_duo',
         shopName: 'champagne_duo',
-        imageUrl: `${CDN_BASE}/images/owls/83e6d8f9bcf8939fb86f55769963ed81.svg`,
+        imageUrl: '/assets/items/outfit_gold.svg',
         tag: 'Prestige Outfit',
         description: 'Shimmering metallic gold feathers celebrating high-tier mastery.',
         rarity: 'Mythic'
@@ -49,7 +47,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_SPORT-{seed}-tracksuit_duo',
         shopName: 'tracksuit_duo',
-        imageUrl: `${CDN_BASE}/images/owls/385ad85c4a9b7c828f5bc755deb1a0a2.svg`,
+        imageUrl: '/assets/items/outfit_sport.svg',
         tag: 'Athletic Outfit',
         description: 'Retro sports tracksuit with sweatband, geared up for intense practice sprints.',
         rarity: 'Epic'
@@ -61,7 +59,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_SUPER-{seed}-super_duo',
         shopName: 'super_duo',
-        imageUrl: `${CDN_BASE}/images/owls/23d6441280c45427d156752a61e15d58.svg`,
+        imageUrl: '/assets/items/outfit_super.svg',
         tag: 'Heroic Skin',
         description: 'Heroic Duo with a fluttering red cape and eye mask, defending streaks across the globe.',
         rarity: 'Mythic'
@@ -73,7 +71,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_FIRST-{seed}-avatar_skin_hot_dog',
         shopName: 'avatar_skin_hot_dog',
-        imageUrl: `${CDN_BASE}/images/owls/3c1baafacd9276bff595827773937ef1.svg`,
+        imageUrl: '/assets/items/avatar_skin_hot_dog.svg',
         tag: 'Community Favorite',
         description: 'Full hot dog bun with mustard drizzle. An iconic community collectible.',
         rarity: 'Legendary'
@@ -85,7 +83,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_SECOND-{seed}-avatar_skin_cat',
         shopName: 'avatar_skin_cat',
-        imageUrl: `${CDN_BASE}/images/owls/6ab6319b062b68dd62eb7bc04d28c995.svg`,
+        imageUrl: '/assets/items/avatar_skin_cat.svg',
         tag: 'Animal Skin',
         description: 'Duo equipped with cat ears and whiskers, purring as you complete lessons.',
         rarity: 'Epic'
@@ -97,7 +95,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_THIRD-{seed}-avatar_skin_dead_duo',
         shopName: 'avatar_skin_dead_duo',
-        imageUrl: `${CDN_BASE}/images/owls/693a0e4c9c4ee679cccb2bc0c793804c.svg`,
+        imageUrl: '/assets/items/avatar_skin_dead_duo.svg',
         tag: 'Supernatural Skin',
         description: 'Spooky ghostly Duo hovering with an ethereal glow.',
         rarity: 'Mythic'
@@ -109,7 +107,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_QUEST_FOURTH-{seed}-toy_hunt',
         shopName: 'avatar_skin_toy_hunt_grand_prize',
-        imageUrl: `${CDN_BASE}/images/owls/b5bc537848b9862c28dff0a53c978ac7.svg`,
+        imageUrl: '/assets/items/avatar_skin_toy_hunt_grand_prize.svg',
         tag: 'Collector Series',
         description: 'Plush teddy bear Duo unlocked from complete puzzle challenge sets.',
         rarity: 'Legendary'
@@ -121,7 +119,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_HALLOWEEN-{seed}-pumpkin',
         shopName: 'avatar_skin_halloween_duo',
-        imageUrl: `${CDN_BASE}/images/owls/41890942663adf20c3bee9a377f23432.svg`,
+        imageUrl: '/assets/items/avatar_skin_halloween_duo.svg',
         tag: 'Seasonal Special',
         description: 'Carved pumpkin armor with an ominous grin and autumn aura.',
         rarity: 'Epic'
@@ -133,7 +131,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_WINTER-{seed}-frost',
         shopName: 'avatar_skin_winter_frost',
-        imageUrl: `${CDN_BASE}/images/owls/768eb19f6bd297633bd858b2bff0c4ed.svg`,
+        imageUrl: '/assets/items/avatar_skin_winter_frost.svg',
         tag: 'Seasonal Special',
         description: 'Crystalline ice feathers and frost crown forged from winter streak triumphs.',
         rarity: 'Epic'
@@ -145,7 +143,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_SPACE-{seed}-astronaut',
         shopName: 'avatar_skin_space_duo',
-        imageUrl: `${CDN_BASE}/images/owls/91701ebacdd3564f5630c37ac9adf12e.svg`,
+        imageUrl: '/assets/items/avatar_skin_space_duo.svg',
         tag: 'Cosmic Skin',
         description: 'Pressurized lunar exploration suit with reflective gold visor.',
         rarity: 'Legendary'
@@ -157,7 +155,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_CHEF-{seed}-master_chef',
         shopName: 'avatar_skin_chef_duo',
-        imageUrl: `${CDN_BASE}/images/owls/9f1bfc38ed75a72ebff1a718976eb98b.svg`,
+        imageUrl: '/assets/items/avatar_skin_chef_duo.svg',
         tag: 'Culinary Outfit',
         description: 'Traditional tall chef hat and pristine kitchen apron.',
         rarity: 'Rare'
@@ -169,7 +167,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_WIZARD-{seed}-arcane',
         shopName: 'avatar_skin_wizard_duo',
-        imageUrl: `${CDN_BASE}/images/owls/dc951619de66ba7327ead1d935f87568.svg`,
+        imageUrl: '/assets/items/avatar_skin_wizard_duo.svg',
         tag: 'Mystic Skin',
         description: 'Pointed star-embroidered sorcerer hat and runic enchanted cloak.',
         rarity: 'Legendary'
@@ -181,7 +179,7 @@ const ITEMS_CATALOG = [
         type: 'AVATAR_SKIN',
         rewardPattern: 'AVATAR_SKINS_STREET-{seed}-streetwear',
         shopName: 'avatar_skin_streetwear',
-        imageUrl: `${CDN_BASE}/images/owls/ff2c5a2bb238c19add1baf975a4b175b.svg`,
+        imageUrl: '/assets/items/avatar_skin_streetwear.svg',
         tag: 'Modern Style',
         description: 'Urban oversized hoodie, tinted shades, and premium wireless headphones.',
         rarity: 'Rare'
@@ -197,7 +195,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-br',
         shopName: 'country_suit_br',
-        imageUrl: 'https://flagcdn.com/w80/br.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_br.svg',
         tag: 'Country Jersey',
         description: 'Canarinho yellow and green national team jersey with tournament crest.',
         rarity: 'Rare'
@@ -209,7 +207,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-ar',
         shopName: 'country_suit_ar',
-        imageUrl: 'https://flagcdn.com/w80/ar.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_ar.svg',
         tag: 'Country Jersey',
         description: 'Albiceleste sky blue and white striped world champion kit.',
         rarity: 'Rare'
@@ -221,7 +219,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-fr',
         shopName: 'country_suit_fr',
-        imageUrl: 'https://flagcdn.com/w80/fr.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_fr.svg',
         tag: 'Country Jersey',
         description: 'Les Bleus royal navy jersey with gold rooster emblem.',
         rarity: 'Rare'
@@ -233,7 +231,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-de',
         shopName: 'country_suit_de',
-        imageUrl: 'https://flagcdn.com/w80/de.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_de.svg',
         tag: 'Country Jersey',
         description: 'Classic monochrome Die Mannschaft kit with eagle badge.',
         rarity: 'Rare'
@@ -245,7 +243,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-es',
         shopName: 'country_suit_es',
-        imageUrl: 'https://flagcdn.com/w80/es.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_es.svg',
         tag: 'Country Jersey',
         description: 'La Roja fiery red and gold jersey celebrating Iberian football.',
         rarity: 'Rare'
@@ -257,7 +255,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-us',
         shopName: 'country_suit_us',
-        imageUrl: 'https://flagcdn.com/w80/us.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_us.svg',
         tag: 'Country Jersey',
         description: 'Stars & Stripes athletic jersey with navy and crimson accents.',
         rarity: 'Rare'
@@ -269,7 +267,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-gb',
         shopName: 'country_suit_gb',
-        imageUrl: 'https://flagcdn.com/w80/gb.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_gb.svg',
         tag: 'Country Jersey',
         description: 'Traditional Three Lions white and navy jersey with red badge.',
         rarity: 'Rare'
@@ -281,7 +279,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-jp',
         shopName: 'country_suit_jp',
-        imageUrl: 'https://flagcdn.com/w80/jp.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_jp.svg',
         tag: 'Country Jersey',
         description: 'Samurai Blue aerodynamic jersey with origami feather motif.',
         rarity: 'Rare'
@@ -293,7 +291,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-mx',
         shopName: 'country_suit_mx',
-        imageUrl: 'https://flagcdn.com/w80/mx.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_mx.svg',
         tag: 'Country Jersey',
         description: 'El Tri deep emerald green kit with Aztec-inspired feather patterns.',
         rarity: 'Rare'
@@ -305,7 +303,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-it',
         shopName: 'country_suit_it',
-        imageUrl: 'https://flagcdn.com/w80/it.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_it.svg',
         tag: 'Country Jersey',
         description: 'Gli Azzurri Mediterranean blue kit with tricolore sleeve trim.',
         rarity: 'Rare'
@@ -317,7 +315,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-ca',
         shopName: 'country_suit_ca',
-        imageUrl: 'https://flagcdn.com/w80/ca.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_ca.svg',
         tag: 'Country Jersey',
         description: 'Bold red and white jersey featuring stylized maple leaf graphics.',
         rarity: 'Rare'
@@ -329,7 +327,7 @@ const ITEMS_CATALOG = [
         type: 'COUNTRY_SUIT',
         rewardPattern: 'WORLD_CUP_SUIT-kr',
         shopName: 'country_suit_kr',
-        imageUrl: 'https://flagcdn.com/w80/kr.png',
+        imageUrl: '/assets/items/avatar_skin_world_cup_kr.svg',
         tag: 'Country Jersey',
         description: 'Taegeuk Warriors vivid red jersey with white tiger crest.',
         rarity: 'Rare'
@@ -345,7 +343,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'LEAGUE_REWARD-tournament_diamond_winner',
         shopName: 'badge_diamond_tournament_winner',
-        imageUrl: `${CDN_BASE}/images/leagues/5642e1e72813a88e8973b551a2004c7f.svg`,
+        imageUrl: '/assets/items/badge_diamond_tournament_winner.svg',
         tag: 'Tournament Trophy',
         description: 'The premier competitive accolade in Duolingo. Conquering the 3-week Diamond Tournament.',
         rarity: 'Legendary'
@@ -357,7 +355,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'LEAGUE_REWARD-diamond_first_place',
         shopName: 'badge_diamond_league_first',
-        imageUrl: `${CDN_BASE}/images/leagues/f12703218fc80de76a63e650726f742e.svg`,
+        imageUrl: '/assets/items/badge_diamond_league_first.svg',
         tag: 'Leaderboard Legend',
         description: 'Gold wreath badge awarded for finishing in 1st place in the highest league tier.',
         rarity: 'Legendary'
@@ -369,7 +367,7 @@ const ITEMS_CATALOG = [
         type: 'TITLE',
         rewardPattern: 'CHESS_EVENT_REWARD-grandmaster_king',
         shopName: 'title_chess_grandmaster_king',
-        imageUrl: `${CDN_BASE}/images/pathCharacters/chess/active/95cbea6c1af07c35618bb9eef3a1ca33.svg`,
+        imageUrl: '/assets/items/title_chess_grandmaster_king.svg',
         tag: 'Chess Title',
         description: 'Crown of the Grandmaster Chess King, earned through Duolingo chess challenges.',
         rarity: 'Mythic'
@@ -381,7 +379,7 @@ const ITEMS_CATALOG = [
         type: 'TITLE',
         rewardPattern: 'CHESS_EVENT_REWARD-grandmaster_queen',
         shopName: 'title_chess_grandmaster_queen',
-        imageUrl: `${CDN_BASE}/images/pathCharacters/chess/active/c81f691038906c48548a4cc0067d4fa4.svg`,
+        imageUrl: '/assets/items/title_chess_grandmaster_queen.svg',
         tag: 'Chess Title',
         description: 'Tiara of the Grandmaster Chess Queen, earned through high-level tactical matches.',
         rarity: 'Mythic'
@@ -393,7 +391,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'CHESS_EVENT_REWARD-knight_tactician',
         shopName: 'badge_chess_knight',
-        imageUrl: `${CDN_BASE}/images/pathCharacters/chess/active/0a926d1c98941e920daabc203196b22a.svg`,
+        imageUrl: '/assets/items/badge_chess_knight.svg',
         tag: 'Chess Badge',
         description: 'Awarded for master tactical combinations in the Duolingo chess series.',
         rarity: 'Epic'
@@ -405,7 +403,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'STREAK_SOCIETY-365',
         shopName: 'badge_streak_society_365',
-        imageUrl: `${CDN_BASE}/images/leagues/9fadb349c2ece257386a0e576359c867.svg`,
+        imageUrl: '/assets/items/badge_streak_society_365.svg',
         tag: 'Streak Society Badge',
         description: 'Official induction badge celebrating 365 consecutive days of daily language learning.',
         rarity: 'Legendary'
@@ -417,7 +415,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'STREAK_SOCIETY-500',
         shopName: 'badge_streak_society_500',
-        imageUrl: `${CDN_BASE}/images/leagues/a8e5c18e80054228b2c61168846ff643.svg`,
+        imageUrl: '/assets/items/badge_streak_society_500.svg',
         tag: 'Streak Society Badge',
         description: 'Prestige crest celebrating 500 uninterrupted days of practice.',
         rarity: 'Mythic'
@@ -429,7 +427,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'STREAK_SOCIETY-1000',
         shopName: 'badge_streak_society_1000',
-        imageUrl: `${CDN_BASE}/images/leagues/6b8a8db5ac7f847e7e87efe97c8b451a.svg`,
+        imageUrl: '/assets/items/badge_streak_society_1000.svg',
         tag: 'Titan Crest',
         description: 'Elite milestone crest honoring 1,000 continuous days of multilingual discipline.',
         rarity: 'Mythic'
@@ -441,7 +439,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'FRIEND_QUEST_ACHIEVEMENT-master',
         shopName: 'badge_friend_quest_champion',
-        imageUrl: `${CDN_BASE}/images/leagues/535fc27de224cc7d311dbb5de4f33be6.svg`,
+        imageUrl: '/assets/items/badge_friend_quest_champion.svg',
         tag: 'Co-op Badge',
         description: 'Granted for completing 100 Friend Quest joint objectives together.',
         rarity: 'Epic'
@@ -453,7 +451,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'GLOBAL_ACHIEVEMENT-wildfire_top_tier',
         shopName: 'badge_wildfire_champion',
-        imageUrl: `${CDN_BASE}/images/leagues/2ceb401cae52712705b66a77df83ce40.svg`,
+        imageUrl: '/assets/items/badge_wildfire_champion.svg',
         tag: 'Global Honor',
         description: 'Recognizes learners in the top 1% globally for study consistency.',
         rarity: 'Epic'
@@ -465,7 +463,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'ACCURACY_ACHIEVEMENT-sharpshooter_100',
         shopName: 'badge_sharpshooter_master',
-        imageUrl: `${CDN_BASE}/images/leagues/beb0df263d0f696bc7095d56b448ca78.svg`,
+        imageUrl: '/assets/items/badge_sharpshooter_master.svg',
         tag: 'Skill Badge',
         description: 'Awarded for completing 50 lessons with zero mistakes in a single week.',
         rarity: 'Rare'
@@ -477,7 +475,7 @@ const ITEMS_CATALOG = [
         type: 'BADGE',
         rewardPattern: 'SPEED_ACHIEVEMENT-lightning_round',
         shopName: 'badge_speed_racer',
-        imageUrl: `${CDN_BASE}/images/leagues/573de2bc90b2499eeb2b3738cff90133.svg`,
+        imageUrl: '/assets/items/badge_speed_racer.svg',
         tag: 'Speed Badge',
         description: 'Awarded for completing timed Ramp-Up challenges with seconds to spare.',
         rarity: 'Rare'
@@ -492,7 +490,7 @@ const ITEMS_CATALOG = [
         category: 'protection',
         type: 'SHOP_ITEM',
         shopName: 'streak_freeze',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/8d8a819f30b6f538853e0877599ed7f1.svg`,
+        imageUrl: '/assets/items/streak_freeze.svg',
         tag: 'Streak Protection',
         description: 'Protects your streak from resetting if you miss a single day of practice.',
         rarity: 'Common'
@@ -503,7 +501,7 @@ const ITEMS_CATALOG = [
         category: 'protection',
         type: 'SHOP_ITEM',
         shopName: 'streak_freeze_pack',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/ddd4794e495fca5c45bf358115bd9053.svg`,
+        imageUrl: '/assets/items/streak_freeze_pack.svg',
         tag: 'Inventory Pack',
         description: 'Double reserve bundle maintaining your backup inventory at maximum capacity.',
         rarity: 'Rare'
@@ -514,7 +512,7 @@ const ITEMS_CATALOG = [
         category: 'protection',
         type: 'SHOP_ITEM',
         shopName: 'streak_society_shield',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/85f13bef0cec7175ae190a3a8a513d58.svg`,
+        imageUrl: '/assets/items/streak_society_shield.svg',
         tag: 'Exclusive Protection',
         description: 'Streak Society privilege providing seven days of comprehensive protection.',
         rarity: 'Legendary'
@@ -524,8 +522,8 @@ const ITEMS_CATALOG = [
         name: 'Full Heart Refill',
         category: 'protection',
         type: 'SHOP_ITEM',
-        shopName: 'heart_refill_full',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/409e32ae79150d9809948154defb09f5.svg`,
+        shopName: 'heart_refill',
+        imageUrl: '/assets/items/heart_refill_full.svg',
         tag: 'Vitality Boost',
         description: 'Restores all 5 learning hearts instantly so you can continue lessons without pause.',
         rarity: 'Common'
@@ -536,7 +534,7 @@ const ITEMS_CATALOG = [
         category: 'protection',
         type: 'CLASSROOM_PASS',
         shopName: 'unlimited_hearts_pass',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/4e0a0177dbfbbcf30f6a633d825a1460.svg`,
+        imageUrl: '/assets/items/unlimited_hearts_pass.svg',
         tag: 'Infinite Hearts',
         description: 'Activates schools educator mode for permanently unlimited lesson hearts.',
         rarity: 'Mythic'
@@ -547,7 +545,7 @@ const ITEMS_CATALOG = [
         category: 'protection',
         type: 'SHOP_ITEM',
         shopName: 'weekend_amulet',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/fdfafca4c421c6ab3c0c8b10a4ae4ff6.svg`,
+        imageUrl: '/assets/items/weekend_amulet.svg',
         tag: 'Weekend Shield',
         description: 'Special weekend insurance covering missed lessons on Saturday and Sunday.',
         rarity: 'Rare'
@@ -557,8 +555,8 @@ const ITEMS_CATALOG = [
         name: 'Double or Nothing 7-Day Wager',
         category: 'protection',
         type: 'SHOP_ITEM',
-        shopName: 'double_or_nothing_wager',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/1a7bd9123609523cb07efd902a0ee2d5.svg`,
+        shopName: 'double_or_nothing',
+        imageUrl: '/assets/items/double_or_nothing_wager.svg',
         tag: 'Gem Investment',
         description: 'Wager 50 gems to practice 7 straight days and earn 100 gems back.',
         rarity: 'Rare'
@@ -569,7 +567,7 @@ const ITEMS_CATALOG = [
         category: 'protection',
         type: 'SHOP_ITEM',
         shopName: 'early_bird_boost_15m',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/1137fd970b51b6219b90fce9896e55c9.svg`,
+        imageUrl: '/assets/items/early_bird_boost_15m.svg',
         tag: 'XP Booster',
         description: '15 minutes of double XP for lessons completed during evening hours.',
         rarity: 'Rare'
@@ -580,7 +578,7 @@ const ITEMS_CATALOG = [
         category: 'protection',
         type: 'SHOP_ITEM',
         shopName: 'night_owl_boost_15m',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/fbdc5a60b0f33c7d4beb3af40f2287d5.svg`,
+        imageUrl: '/assets/items/night_owl_boost_15m.svg',
         tag: 'XP Booster',
         description: '15 minutes of double XP for lessons completed during morning hours.',
         rarity: 'Rare'
@@ -591,7 +589,7 @@ const ITEMS_CATALOG = [
         category: 'protection',
         type: 'SHOP_ITEM',
         shopName: 'timer_boost_extra',
-        imageUrl: `${CDN_BASE}/images/streakCalendar/b708a2274da80a9dbe333a7a0d090aa6.svg`,
+        imageUrl: '/assets/items/timer_boost_extra.svg',
         tag: 'Speed Item',
         description: 'Adds 60 bonus seconds in rapid-fire Match Madness and Ramp-Up challenges.',
         rarity: 'Common'
@@ -606,7 +604,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'early_bird_chest',
-        imageUrl: `${CDN_BASE}/images/goals/7170947038eaa6cba13c7ee7d6c14e35.svg`,
+        imageUrl: '/assets/items/early_bird_chest.svg',
         tag: 'Time-Exclusive Chest',
         description: 'Earned from morning practice and ready to open between 6:00 PM and 11:00 PM.',
         rarity: 'Rare'
@@ -617,7 +615,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'night_owl_chest',
-        imageUrl: `${CDN_BASE}/images/goals/b5dc107d1cf9cea867391174a8f3185b.svg`,
+        imageUrl: '/assets/items/night_owl_chest.svg',
         tag: 'Time-Exclusive Chest',
         description: 'Earned from evening practice and ready to open between 6:00 AM and 12:00 PM.',
         rarity: 'Rare'
@@ -628,7 +626,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'free_chest',
-        imageUrl: `${CDN_BASE}/images/goals/2f657380071df22fcb537fd294a42ae7.svg`,
+        imageUrl: '/assets/items/free_chest.svg',
         tag: 'Daily Drop',
         description: 'Complimentary daily gift box offering gems and random consumables.',
         rarity: 'Common'
@@ -639,7 +637,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'friends_quest_chest',
-        imageUrl: `${CDN_BASE}/images/goals/645d8ee266b41bb009986bcf057bdddd.svg`,
+        imageUrl: '/assets/items/friends_quest_chest.svg',
         tag: 'Co-op Reward',
         description: 'Shared treasure chest unlocked upon finishing weekly partner quests.',
         rarity: 'Rare'
@@ -650,7 +648,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'monthly_challenge_chest',
-        imageUrl: `${CDN_BASE}/images/goals/d50a64c07d6a558abecc5eaf8481cd80.svg`,
+        imageUrl: '/assets/items/monthly_challenge_chest.svg',
         tag: 'Badge Chest',
         description: 'Monthly special chest unlocked by meeting your 30-quest challenge quota.',
         rarity: 'Epic'
@@ -661,7 +659,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'diamond_league_chest',
-        imageUrl: `${CDN_BASE}/images/goals/f874b6952352c8466b192d0a0d6ddc28.svg`,
+        imageUrl: '/assets/items/diamond_league_chest.svg',
         tag: 'Tier 10 Chest',
         description: 'The pinnacle league reward box loaded with gems, boosts, and badges.',
         rarity: 'Legendary'
@@ -672,7 +670,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'obsidian_league_chest',
-        imageUrl: `${CDN_BASE}/images/goals/daa802c6eebc41858b704ee001d05f0c.svg`,
+        imageUrl: '/assets/items/obsidian_league_chest.svg',
         tag: 'Tier 9 Chest',
         description: 'High-tier reward box granted to top finishers in the Obsidian tier.',
         rarity: 'Epic'
@@ -683,7 +681,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'emerald_league_chest',
-        imageUrl: `${CDN_BASE}/images/goals/5ac5f9a9c076d81536ee0f85ac88e4c2.svg`,
+        imageUrl: '/assets/items/emerald_league_chest.svg',
         tag: 'Tier 6 Chest',
         description: 'Celebratory prize crate awarded upon promotion to the Emerald division.',
         rarity: 'Rare'
@@ -694,7 +692,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'ruby_league_chest',
-        imageUrl: `${CDN_BASE}/images/goals/d8e2b76c5f925390f22c39c17f752e84.svg`,
+        imageUrl: '/assets/items/ruby_league_chest.svg',
         tag: 'Tier 5 Chest',
         description: 'Mid-tier prize crate awarded upon promotion to the Ruby division.',
         rarity: 'Rare'
@@ -705,7 +703,7 @@ const ITEMS_CATALOG = [
         category: 'chests',
         type: 'SHOP_ITEM',
         shopName: 'sapphire_league_chest',
-        imageUrl: `${CDN_BASE}/images/goals/b39589bb4696d406be1ec194e3550d29.svg`,
+        imageUrl: '/assets/items/sapphire_league_chest.svg',
         tag: 'Tier 4 Chest',
         description: 'Prize crate awarded upon promotion to the Sapphire division.',
         rarity: 'Common'

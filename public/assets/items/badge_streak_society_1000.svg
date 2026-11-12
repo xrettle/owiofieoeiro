@@ -1,0 +1,7 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Mythic Titan Diamond Shield -->
+        <polygon points="40,14 62,24 58,54 40,68 22,54 18,24" fill="#6366F1" stroke="#4F46E5" stroke-width="2"/>
+        <polygon points="40,20 54,28 50,50 40,60 30,50 26,28" fill="#818CF8"/>
+        <text x="40" y="44" font-size="9" font-weight="900" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif">1000</text>
+        <text x="40" y="52" font-size="6" font-weight="800" text-anchor="middle" fill="#C7D2FE" font-family="sans-serif">DAYS</text>
+    </svg>

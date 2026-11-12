@@ -1,0 +1,15 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Duo Body -->
+        <rect x="22" y="16" width="36" height="46" rx="18" fill="#58CC02"/>
+        <!-- Cool Sunglasses -->
+        <rect x="23" y="24" width="15" height="10" rx="3" fill="#0F172A"/>
+        <rect x="43" y="24" width="15" height="10" rx="3" fill="#0F172A"/>
+        <line x1="38" y1="28" x2="43" y2="28" stroke="#0F172A" stroke-width="2"/>
+        <polygon points="40,34 35,39 45,39" fill="#F49000"/>
+        <!-- Headphones -->
+        <path d="M16 32 C16 14 64 14 64 32" stroke="#F97316" stroke-width="3.5" fill="none"/>
+        <rect x="14" y="28" width="6" height="12" rx="3" fill="#EA580C"/>
+        <rect x="60" y="28" width="6" height="12" rx="3" fill="#EA580C"/>
+        <!-- Oversized Hoodie Base -->
+        <path d="M22 46 L58 46 L56 64 L24 64 Z" fill="#334155"/>
+    </svg>

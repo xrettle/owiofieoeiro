@@ -1,0 +1,16 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Tall Chef Toque -->
+        <path d="M26 22 C22 14 30 6 36 10 C40 4 46 4 48 10 C54 6 60 14 56 22 Z" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+        <rect x="27" y="19" width="28" height="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+        <!-- Duo Body -->
+        <rect x="22" y="24" width="36" height="42" rx="18" fill="#58CC02"/>
+        <circle cx="30" cy="34" r="6" fill="#FFFFFF"/>
+        <circle cx="50" cy="34" r="6" fill="#FFFFFF"/>
+        <circle cx="32" cy="34" r="3" fill="#3C3C3C"/>
+        <circle cx="48" cy="34" r="3" fill="#3C3C3C"/>
+        <polygon points="40,38 35,43 45,43" fill="#F49000"/>
+        <!-- Red Scarf / Neckerchief -->
+        <polygon points="34,48 40,54 46,48 40,46" fill="#EF4444"/>
+        <!-- Apron -->
+        <path d="M28 52 L52 52 L50 64 L30 64 Z" fill="#FFFFFF"/>
+    </svg>

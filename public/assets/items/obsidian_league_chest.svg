@@ -1,0 +1,7 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Obsidian Purple Chest -->
+        <rect x="18" y="36" width="44" height="28" rx="4" fill="#18181B" stroke="#09090B" stroke-width="2"/>
+        <path d="M16 36 Q40 20 64 36 Z" fill="#3F3F46" stroke="#27272A" stroke-width="2"/>
+        <rect x="36" y="34" width="8" height="12" rx="2" fill="#A855F7" stroke="#7E22CE" stroke-width="1.5"/>
+        <polygon points="40,37 42,41 40,44 38,41" fill="#FFFFFF"/>
+    </svg>

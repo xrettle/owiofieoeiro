@@ -1,0 +1,12 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Royal Crown -->
+        <path d="M18 52 L22 30 L32 40 L40 24 L48 40 L58 30 L62 52 Z" fill="#FACC15" stroke="#CA8A04" stroke-width="1.5"/>
+        <!-- Cross on Top -->
+        <line x1="40" y1="16" x2="40" y2="24" stroke="#FACC15" stroke-width="2.5"/>
+        <line x1="36" y1="20" x2="44" y2="20" stroke="#FACC15" stroke-width="2.5"/>
+        <!-- Crown Base & Jewels -->
+        <rect x="18" y="52" width="44" height="8" rx="2" fill="#CA8A04"/>
+        <circle cx="28" cy="56" r="2.5" fill="#EF4444"/>
+        <circle cx="40" cy="56" r="2.5" fill="#3B82F6"/>
+        <circle cx="52" cy="56" r="2.5" fill="#10B981"/>
+    </svg>

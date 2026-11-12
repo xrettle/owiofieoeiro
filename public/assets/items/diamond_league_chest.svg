@@ -1,0 +1,8 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Diamond Crystal Chest -->
+        <rect x="18" y="36" width="44" height="28" rx="4" fill="#0369A1" stroke="#075985" stroke-width="2"/>
+        <path d="M16 36 Q40 18 64 36 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="2"/>
+        <!-- Glowing Diamond Latch -->
+        <polygon points="40,30 48,38 40,48 32,38" fill="#E0F2FE" stroke="#38BDF8" stroke-width="1.5"/>
+        <polygon points="40,34 44,38 40,44 36,38" fill="#38BDF8"/>
+    </svg>

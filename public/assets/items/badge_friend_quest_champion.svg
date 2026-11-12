@@ -1,0 +1,7 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Clapped Hands Badge -->
+        <circle cx="40" cy="40" r="22" fill="#58CC02" stroke="#16A34A" stroke-width="2"/>
+        <path d="M28 42 L36 36 L44 42 L42 46 L34 40 L28 44 Z" fill="#FFFFFF"/>
+        <path d="M52 42 L44 36 L36 42 L38 46 L46 40 L52 44 Z" fill="#FEF08A"/>
+        <path d="M40 28 C41 26 44 26 45 28 C46 30 44 32 40 35 C36 32 34 30 35 28 C36 26 39 26 40 28 Z" fill="#EF4444"/>
+    </svg>

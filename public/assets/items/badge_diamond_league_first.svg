@@ -1,0 +1,9 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Laurel Wreath -->
+        <circle cx="40" cy="40" r="24" fill="none" stroke="#F59E0B" stroke-width="3" stroke-dasharray="8,4"/>
+        <!-- Diamond Jewel Center -->
+        <polygon points="40,24 52,36 40,54 28,36" fill="#38BDF8" stroke="#0284C7" stroke-width="2"/>
+        <polygon points="40,28 48,36 40,48 32,36" fill="#E0F2FE"/>
+        <!-- #1 Text -->
+        <text x="40" y="42" font-size="12" font-weight="900" text-anchor="middle" fill="#0369A1" font-family="sans-serif">1</text>
+    </svg>

@@ -1,0 +1,10 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Target Bullseye -->
+        <circle cx="40" cy="40" r="24" fill="#EF4444" stroke="#DC2626" stroke-width="2"/>
+        <circle cx="40" cy="40" r="18" fill="#FFFFFF"/>
+        <circle cx="40" cy="40" r="12" fill="#EF4444"/>
+        <circle cx="40" cy="40" r="6" fill="#FACC15"/>
+        <!-- Golden Arrow -->
+        <line x1="20" y1="20" x2="40" y2="40" stroke="#78350F" stroke-width="3" stroke-linecap="round"/>
+        <polygon points="40,40 34,36 36,34" fill="#FACC15"/>
+    </svg>

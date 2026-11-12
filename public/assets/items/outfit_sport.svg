@@ -1,0 +1,16 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="22" y="16" width="36" height="46" rx="18" fill="#58CC02"/>
+        <circle cx="30" cy="28" r="7" fill="#FFFFFF"/>
+        <circle cx="50" cy="28" r="7" fill="#FFFFFF"/>
+        <circle cx="32" cy="28" r="3.5" fill="#3C3C3C"/>
+        <circle cx="48" cy="28" r="3.5" fill="#3C3C3C"/>
+        <polygon points="40,32 34,38 46,38" fill="#F49000"/>
+        <!-- Headband -->
+        <rect x="20" y="18" width="40" height="7" rx="3.5" fill="#FF4B4B"/>
+        <line x1="22" y1="21.5" x2="58" y2="21.5" stroke="#FFFFFF" stroke-width="1.5"/>
+        <!-- Tracksuit Athletic Jacket -->
+        <path d="M22 42 L58 42 L58 60 L22 60 Z" fill="#1CB0F6"/>
+        <line x1="40" y1="42" x2="40" y2="60" stroke="#FFFFFF" stroke-width="2"/>
+        <line x1="28" y1="42" x2="28" y2="60" stroke="#FFFFFF" stroke-width="1.5"/>
+        <line x1="52" y1="42" x2="52" y2="60" stroke="#FFFFFF" stroke-width="1.5"/>
+    </svg>

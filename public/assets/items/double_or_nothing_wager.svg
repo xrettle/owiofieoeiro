@@ -1,0 +1,8 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Two Blue Gems -->
+        <polygon points="32,22 42,30 32,44 22,30" fill="#38BDF8" stroke="#0284C7" stroke-width="1.5"/>
+        <polygon points="48,22 58,30 48,44 38,30" fill="#0284C7" stroke="#0369A1" stroke-width="1.5"/>
+        <!-- 2X Banner -->
+        <rect x="22" y="46" width="36" height="14" rx="4" fill="#F59E0B" stroke="#D97706" stroke-width="1.5"/>
+        <text x="40" y="57" font-size="11" font-weight="900" text-anchor="middle" fill="#78350F" font-family="sans-serif">2X GEM</text>
+    </svg>

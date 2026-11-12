@@ -1,0 +1,8 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- 7-Day Super Shield -->
+        <path d="M40 14 L62 22 L58 48 C56 58 40 66 40 66 C40 66 24 58 22 48 L18 22 Z" fill="#58CC02" stroke="#16A34A" stroke-width="2.5"/>
+        <!-- Shield Boss with Flame -->
+        <circle cx="40" cy="38" r="12" fill="#FACC15"/>
+        <path d="M40 30 C43 34 44 36 44 39 C44 42 42 44 40 44 C38 44 36 42 36 39 C36 36 37 34 40 30 Z" fill="#EA580C"/>
+        <text x="40" y="58" font-size="9" font-weight="900" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif">7 DAYS</text>
+    </svg>

@@ -1216,16 +1216,17 @@
                 </button>
             </div>
             <div class="modal-body">
-                <p>
+                <p id="tokenModalNotice">
                     Provide your Duolingo JWT token and user ID to link your account. Credentials are stored only in your local browser session.
                 </p>
                 <div class="field-group">
                     <label>Duolingo JWT Token</label>
-                    <textarea class="field-textarea" id="modalTokenInput" rows="3" placeholder="eyJhbGciOi..."></textarea>
+                    <textarea class="field-textarea" id="modalTokenInput" rows="3" placeholder="eyJhbGciOi..." oninput="handleTokenInput(this.value)"></textarea>
+                    <div style="font-size: 11px; color: var(--muted-foreground); margin-top: 4px;">User ID will be extracted automatically from token.</div>
                 </div>
                 <div class="field-group">
                     <label>User ID</label>
-                    <input type="text" class="field-input" id="modalUserIdInput" placeholder="e.g. 84920194">
+                    <input type="text" class="field-input" id="modalUserIdInput" placeholder="Auto-detected from token (or e.g. 84920194)">
                 </div>
                 <button class="glass-brand" style="width: 100%; padding: 9px 16px; border-radius: var(--radius-md); margin-top: 8px;" onclick="saveCustomCredentials()">
                     Save &amp; Reload Profile
@@ -1432,8 +1433,37 @@
             }
         }
 
+        function extractSubFromJwt(token) {
+            if (!token) return '';
+            try {
+                const clean = token.trim().replace(/^bearer\s+/i, '').replace(/^jwt_token=/i, '').replace(/^["']|["']$/g, '');
+                const parts = clean.split('.');
+                if (parts.length === 3) {
+                    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+                    const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
+                    const decoded = JSON.parse(atob(padded));
+                    return decoded.sub ? String(decoded.sub) : '';
+                }
+            } catch (err) {}
+            return '';
+        }
+
+        function handleTokenInput(val) {
+            const sub = extractSubFromJwt(val);
+            if (sub) {
+                document.getElementById('modalUserIdInput').value = sub;
+            }
+        }
+
         async function claimSelectedItems() {
             if (selectedItemIds.size === 0) return;
+
+            // Prompt for credentials if not yet set and no active profile
+            if (!customToken && !userProfile) {
+                openTokenModal('Please connect your Duolingo account with your JWT token first to unlock and equip items.');
+                return;
+            }
+
             const itemsToClaim = Array.from(selectedItemIds);
 
             // Open Progress Modal
@@ -1477,10 +1507,15 @@
                             const statusSpan = el.querySelector('.progress-status');
                             if (r.success) {
                                 statusSpan.className = 'progress-status status-success';
-                                statusSpan.innerText = 'Unlocked';
+                                const msg = (r.message || '').toLowerCase();
+                                if (msg.includes('already') || msg.includes('owned') || msg.includes('maximum')) {
+                                    statusSpan.innerText = 'Owned ✓';
+                                } else {
+                                    statusSpan.innerText = 'Unlocked ✓';
+                                }
                             } else {
                                 statusSpan.className = 'progress-status status-error';
-                                statusSpan.innerText = r.message ? r.message.substring(0, 24) : 'Already Owned';
+                                statusSpan.innerText = r.message ? r.message.substring(0, 24) : 'Claim Error';
                             }
                         }
                     });
@@ -1491,12 +1526,16 @@
                     renderItems();
                 } else {
                     const err = await res.json();
-                    alert(`Error claiming items: ${err.error}`);
                     closeClaimModal();
+                    if (res.status === 400 || (err.error && err.error.toLowerCase().includes('token'))) {
+                        openTokenModal(err.error || 'Duolingo auth token is required.');
+                    } else {
+                        alert(`Error claiming items: ${err.error || 'Request failed'}`);
+                    }
                 }
             } catch (err) {
-                alert(`Network error: ${err.message}`);
                 closeClaimModal();
+                alert(`Network error: ${err.message}`);
             }
         }
 
@@ -1504,10 +1543,18 @@
             document.getElementById('claimModal').classList.remove('active');
         }
 
-        function openTokenModal() {
+        function openTokenModal(noticeMsg) {
             document.getElementById('modalTokenInput').value = customToken;
             document.getElementById('modalUserIdInput').value = customUserId;
+            if (noticeMsg) {
+                document.getElementById('tokenModalNotice').innerText = noticeMsg;
+                document.getElementById('tokenModalNotice').style.color = 'var(--status-done)';
+            } else {
+                document.getElementById('tokenModalNotice').innerText = 'Provide your Duolingo JWT token and user ID to link your account. Credentials are stored only in your local browser session.';
+                document.getElementById('tokenModalNotice').style.color = 'var(--muted-foreground)';
+            }
             document.getElementById('tokenModal').classList.add('active');
+            setTimeout(() => document.getElementById('modalTokenInput').focus(), 150);
         }
 
         function closeTokenModal() {
@@ -1516,7 +1563,9 @@
 
         function saveCustomCredentials() {
             customToken = document.getElementById('modalTokenInput').value.trim();
-            customUserId = document.getElementById('modalUserIdInput').value.trim();
+            let autoSub = extractSubFromJwt(customToken);
+            let inputId = document.getElementById('modalUserIdInput').value.trim();
+            customUserId = inputId || autoSub;
             localStorage.setItem('DUO_TOKEN', customToken);
             localStorage.setItem('DUO_USER_ID', customUserId);
             closeTokenModal();

@@ -1,0 +1,5 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="22" fill="#0F172A" stroke="#F59E0B" stroke-width="2"/>
+        <!-- Golden Lightning Bolt -->
+        <polygon points="44,18 26,38 38,38 34,58 54,34 42,34" fill="#FACC15" stroke="#CA8A04" stroke-width="1.5"/>
+    </svg>

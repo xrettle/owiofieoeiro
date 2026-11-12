@@ -1,0 +1,8 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Friends Co-op Chest -->
+        <rect x="18" y="36" width="44" height="28" rx="4" fill="#0D9488" stroke="#115E59" stroke-width="2"/>
+        <path d="M16 36 Q40 22 64 36 Z" fill="#14B8A6" stroke="#0D9488" stroke-width="2"/>
+        <!-- Dual Heart Lock -->
+        <rect x="34" y="34" width="12" height="12" rx="3" fill="#FACC15"/>
+        <path d="M40 37 C40.5 35 42 35 42.5 37 C43 39 42 41 40 43 C38 41 37 39 37.5 37 C38 35 39.5 35 40 37 Z" fill="#EF4444"/>
+    </svg>

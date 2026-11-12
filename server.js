@@ -8,7 +8,7 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { getCredentials, getUserInventoryAndGems } = require('./helper.js');
+const { getCredentials, getUserIdFromToken, cleanToken, cleanString, getUserInventoryAndGems } = require('./helper.js');
 const { ITEMS_CATALOG, CATEGORIES } = require('./items-catalog.js');
 const { claimItem, claimBatch } = require('./item-claimer.js');
 
@@ -92,8 +92,11 @@ const server = http.createServer(async (req, res) => {
         if (req.method === 'POST' && pathname === '/api/profile') {
             const body = await parseJsonBody(req);
             const envCreds = getCredentials();
-            const token = body.token || envCreds.token;
-            const userId = body.userId || envCreds.userId;
+            const token = cleanToken(body.token || envCreds.token);
+            let userId = cleanString(body.userId || envCreds.userId);
+            if (!userId && token) {
+                userId = getUserIdFromToken(token);
+            }
 
             if (!token) {
                 return sendJson(res, 400, {
@@ -109,12 +112,17 @@ const server = http.createServer(async (req, res) => {
         if (req.method === 'POST' && pathname === '/api/claim') {
             const body = await parseJsonBody(req);
             const envCreds = getCredentials();
-            const token = body.token || envCreds.token;
-            const userId = body.userId || envCreds.userId;
+            const token = cleanToken(body.token || envCreds.token);
+            let userId = cleanString(body.userId || envCreds.userId);
+            if (!userId && token) {
+                userId = getUserIdFromToken(token);
+            }
             const itemIds = body.itemIds || [];
 
             if (!token) {
-                return sendJson(res, 400, { error: 'Duolingo auth token is required.' });
+                return sendJson(res, 400, {
+                    error: 'Duolingo auth token is required. Please click "Connect Account" in the top bar to link your account.'
+                });
             }
             if (!Array.isArray(itemIds) || itemIds.length === 0) {
                 return sendJson(res, 400, { error: 'No items selected.' });

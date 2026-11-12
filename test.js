@@ -3,6 +3,8 @@
  */
 
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 const {
     cleanString,
     cleanToken,
@@ -602,7 +604,11 @@ for (const item of ITEMS_CATALOG) {
     assert.ok(item.name, 'Item must have a name');
     assert.ok(item.category, 'Item must have a category');
     assert.ok(item.type, 'Item must specify a type');
-    assert.ok(item.imageUrl && item.imageUrl.startsWith('https://'), `Item ${item.id} must have a valid https preview imageUrl`);
+    assert.ok(item.imageUrl && (item.imageUrl.startsWith('/assets/items/') || item.imageUrl.startsWith('https://')), `Item ${item.id} must have a valid preview imageUrl (got ${item.imageUrl})`);
+    if (item.imageUrl.startsWith('/assets/items/')) {
+        const localPath = path.join(__dirname, 'public', item.imageUrl);
+        assert.ok(fs.existsSync(localPath), `SVG illustration file missing for item ${item.id}: ${localPath}`);
+    }
     assert.ok(!emojiRegex.test(item.name), `Item name must not contain emojis: ${item.name}`);
     assert.ok(!emojiRegex.test(item.description), `Item desc must not contain emojis: ${item.description}`);
     assert.ok(!idSet.has(item.id), `Duplicate item id detected: ${item.id}`);

@@ -1,0 +1,8 @@
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Infinity Heart Pass -->
+        <circle cx="40" cy="40" r="24" fill="#0F172A" stroke="#38BDF8" stroke-width="2"/>
+        <!-- Infinity Loop in Gold & Cyan -->
+        <path d="M30 40 C30 34 36 34 40 40 C44 46 50 46 50 40 C50 34 44 34 40 40 C36 46 30 46 30 40 Z" fill="none" stroke="#FACC15" stroke-width="5" stroke-linecap="round"/>
+        <!-- Small Heart in center -->
+        <path d="M40 24 C41 22 43 22 44 24 C45 26 43 28 40 31 C37 28 35 26 36 24 C37 22 39 22 40 24 Z" fill="#EF4444"/>
+    </svg>
