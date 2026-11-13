@@ -959,8 +959,12 @@ async function purchaseShopItem(headers, userId, itemName, languages = {}, optio
     const fromLanguage = languages.fromLanguage || 'en';
     const learningLanguage = languages.learningLanguage || 'fr';
 
-    const url = `https://www.duolingo.com/2017-06-30/users/${userId}/shop-items`;
-    const payload = {
+    const endpoints = [
+        `https://www.duolingo.com/2023-05-23/users/${userId}/shop-items`,
+        `https://www.duolingo.com/2017-06-30/users/${userId}/shop-items`
+    ];
+
+    const basePayload = {
         itemName,
         isFree,
         consumed: true,
@@ -968,43 +972,53 @@ async function purchaseShopItem(headers, userId, itemName, languages = {}, optio
         learningLanguage
     };
 
-    const res = await fetch(url, {
-        headers,
-        method: 'POST',
-        body: JSON.stringify(payload)
-    });
-
-    if (res.ok) {
+    let lastError = null;
+    for (const url of endpoints) {
         try {
-            return await res.json();
-        } catch {
-            return { success: true, itemName };
-        }
-    }
-
-    // If isFree failed, try standard purchase if allowed
-    if (isFree && options.fallbackPaid !== false) {
-        try {
-            const paidRes = await fetch(url, {
+            const res = await fetch(url, {
                 headers,
                 method: 'POST',
-                body: JSON.stringify({
-                    itemName,
-                    isFree: false,
-                    fromLanguage,
-                    learningLanguage
-                })
+                body: JSON.stringify(basePayload)
             });
-            if (paidRes.ok) {
-                return await paidRes.json();
+
+            if (res.ok) {
+                try {
+                    return await res.json();
+                } catch {
+                    return { success: true, itemName };
+                }
             }
-        } catch {
-            // fallback error handled below
+
+            const text = await res.text();
+            lastError = new Error(`Failed to acquire shop item ${itemName} (HTTP ${res.status}): ${text}`);
+
+            // If isFree failed, try standard purchase if allowed
+            if (isFree && options.fallbackPaid !== false) {
+                try {
+                    const paidRes = await fetch(url, {
+                        headers,
+                        method: 'POST',
+                        body: JSON.stringify({
+                            itemName,
+                            isFree: false,
+                            fromLanguage,
+                            learningLanguage
+                        })
+                    });
+                    if (paidRes.ok) {
+                        return await paidRes.json();
+                    }
+                } catch {
+                    // ignore and continue
+                }
+            }
+        } catch (err) {
+            lastError = err;
         }
     }
 
-    const text = await res.text();
-    throw new Error(`Failed to acquire shop item ${itemName} (HTTP ${res.status}): ${text}`);
+    if (lastError) throw lastError;
+    throw new Error(`Failed to acquire shop item ${itemName}`);
 }
 
 module.exports = {

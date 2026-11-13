@@ -665,16 +665,65 @@ assert.strictEqual(typeof claimBatch, 'function');
     assert.strictEqual(ownedResult.item.id, 'avatar_skin_world_cup_ar');
     assert.ok(ownedResult.message.includes('Already'));
 
+    // Test real Duolingo built-avatar-states API flow with mock fetch
+    let patchUrlCalled = null;
+    let patchBodyParsed = null;
+    const mockFetch = async (url, opts = {}) => {
+        if (url.includes('/built-avatar-states')) {
+            if (opts.method === 'GET' || !opts.method) {
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({
+                        builtAvatarStates: [{
+                            stateId: 'built-avatar-state-id-0-0',
+                            isSavedState: false,
+                            state: {
+                                BackgroundColor: 1,
+                                Body: 1,
+                                CostumeArtboard: 0,
+                                HasCostume: 0,
+                                SkinTone: 15
+                            }
+                        }]
+                    })
+                };
+            }
+            if (opts.method === 'PATCH') {
+                patchUrlCalled = url;
+                patchBodyParsed = JSON.parse(opts.body);
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({ ok: true })
+                };
+            }
+        }
+        return { ok: true, status: 200, json: async () => ({}) };
+    };
+
     const mockFreshProfile = {
         equippedItems: [],
         inventory: {}
     };
-    const freshResult = await claimItem(mockToken, '12345678', 'avatar_skin_world_cup_ar', mockFreshProfile);
+    const freshResult = await claimItem(mockToken, '12345678', 'avatar_skin_world_cup_ar', mockFreshProfile, { fetch: mockFetch });
     assert.strictEqual(freshResult.success, true);
     assert.strictEqual(freshResult.item.id, 'avatar_skin_world_cup_ar');
     assert.ok(freshResult.message.toLowerCase().includes('equipped'));
+    assert.ok(patchUrlCalled.includes('/users/12345678/built-avatar-states'));
+    assert.strictEqual(patchBodyParsed.builtAvatarStates[0].state.HasCostume, 1);
+    assert.strictEqual(patchBodyParsed.builtAvatarStates[0].state.CostumeArtboard, 2);
+
+    // Verify rejection honesty: when Duolingo returns HTTP 401/404, claimItem reports failure and never fakes success
+    const mockRejectFetch = async () => ({
+        ok: false,
+        status: 401,
+        text: async () => 'Unauthorized'
+    });
+    const failedResult = await claimItem(mockToken, '12345678', 'avatar_skin_world_cup_ar', mockFreshProfile, { fetch: mockRejectFetch });
+    assert.strictEqual(failedResult.success, false);
+    assert.ok(failedResult.message.includes('401') || failedResult.message.includes('authentication'));
+
+    console.log('   Duolingo Locker Room Items Catalog & Claimer passed\n');
+    console.log('All 23 test suites passed.\n');
 })();
-
-console.log('   Duolingo Locker Room Items Catalog & Claimer passed\n');
-
-console.log('All 23 test suites passed.\n');

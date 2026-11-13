@@ -1009,6 +1009,20 @@
             object-fit: contain;
         }
 
+        .progress-item-name {
+            font-weight: 500;
+        }
+
+        .progress-item-detail {
+            font-size: 11px;
+            color: var(--muted-foreground);
+            margin-top: 2px;
+            max-width: 260px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .progress-status {
             font-family: var(--font-mono);
             font-size: 11px;
@@ -1488,7 +1502,10 @@
                     <li class="progress-item" id="progress-${id}">
                         <div class="progress-item-title">
                             ${item ? `<img src="${item.imageUrl}" class="progress-item-thumb" alt="${item.name}" />` : ''}
-                            <span>${item ? item.name : id}</span>
+                            <div>
+                                <div class="progress-item-name">${item ? item.name : id}</div>
+                                <div class="progress-item-detail" id="progress-detail-${id}">Queued for verification</div>
+                            </div>
                         </div>
                         <span class="progress-status status-pending">Queued</span>
                     </li>
@@ -1512,7 +1529,9 @@
                     updateProfileUI();
 
                     (data.results || []).forEach(r => {
-                        const el = document.getElementById(`progress-${r.itemId || (r.item && r.item.id)}`);
+                        const id = r.itemId || (r.item && r.item.id);
+                        const el = document.getElementById(`progress-${id}`);
+                        const detailEl = document.getElementById(`progress-detail-${id}`);
                         if (el) {
                             const statusSpan = el.querySelector('.progress-status');
                             if (r.success) {
@@ -1523,9 +1542,18 @@
                                 } else {
                                     statusSpan.innerText = 'Unlocked ✓';
                                 }
+                                if (detailEl) {
+                                    detailEl.innerText = r.message || 'Equipped on your Duolingo account';
+                                    detailEl.style.color = 'var(--brand-green)';
+                                }
                             } else {
                                 statusSpan.className = 'progress-status status-error';
-                                statusSpan.innerText = r.message ? r.message.substring(0, 24) : 'Claim Error';
+                                statusSpan.innerText = 'Failed ✕';
+                                if (detailEl) {
+                                    detailEl.innerText = r.message || 'Duolingo rejected request';
+                                    detailEl.style.color = 'var(--destructive)';
+                                    detailEl.title = r.message || '';
+                                }
                             }
                         }
                     });
