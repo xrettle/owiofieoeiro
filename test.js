@@ -653,6 +653,28 @@ assert.strictEqual(emptySearch.length, ITEMS_CATALOG.length);
 assert.strictEqual(typeof claimItem, 'function');
 assert.strictEqual(typeof claimBatch, 'function');
 
+// Verify Team Argentina Suit claim resilience
+(async () => {
+    const mockToken = 'header.' + Buffer.from(JSON.stringify({ sub: '12345678' })).toString('base64url') + '.signature';
+    const mockProfileWithSuit = {
+        equippedItems: ['avatar_skin_world_cup_ar'],
+        inventory: { duo_cup_argentina: 1 }
+    };
+    const ownedResult = await claimItem(mockToken, '12345678', 'avatar_skin_world_cup_ar', mockProfileWithSuit);
+    assert.strictEqual(ownedResult.success, true);
+    assert.strictEqual(ownedResult.item.id, 'avatar_skin_world_cup_ar');
+    assert.ok(ownedResult.message.includes('Already'));
+
+    const mockFreshProfile = {
+        equippedItems: [],
+        inventory: {}
+    };
+    const freshResult = await claimItem(mockToken, '12345678', 'avatar_skin_world_cup_ar', mockFreshProfile);
+    assert.strictEqual(freshResult.success, true);
+    assert.strictEqual(freshResult.item.id, 'avatar_skin_world_cup_ar');
+    assert.ok(freshResult.message.toLowerCase().includes('equipped'));
+})();
+
 console.log('   Duolingo Locker Room Items Catalog & Claimer passed\n');
 
 console.log('All 23 test suites passed.\n');

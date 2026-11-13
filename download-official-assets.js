@@ -34,7 +34,7 @@ const OFFICIAL_ASSETS = {
 
     // === Country Tournament Suits (Official Duolingo National Country Badges) ===
     'avatar_skin_world_cup_br': 'https://d35aaqx5ub95lt.cloudfront.net/images/weeklyReport/canvas-flag/09a994941090eb35d48f08112eb283c7.png',
-    'avatar_skin_world_cup_ar': 'https://d35aaqx5ub95lt.cloudfront.net/images/weeklyReport/canvas-flag/b7057dea74f1a786f0662c32f0d9981c.png',
+    'avatar_skin_world_cup_ar': 'https://static.wikia.nocookie.net/duolingo/images/5/58/Duo_Cup_Shared_Image_Argentina.png',
     'avatar_skin_world_cup_fr': 'https://d35aaqx5ub95lt.cloudfront.net/images/weeklyReport/canvas-flag/12c5fe127889a21e9f4a9349f7b0cba0.png',
     'avatar_skin_world_cup_de': 'https://d35aaqx5ub95lt.cloudfront.net/images/weeklyReport/canvas-flag/07425aa9ddd7bbf290da7a8e586f6818.png',
     'avatar_skin_world_cup_es': 'https://d35aaqx5ub95lt.cloudfront.net/images/weeklyReport/canvas-flag/88f06f3d23c07f0e70d7db5b711700ae.png',

@@ -146,6 +146,9 @@ const server = http.createServer(async (req, res) => {
                     '.json': 'application/json',
                     '.png': 'image/png',
                     '.svg': 'image/svg+xml',
+                    '.webp': 'image/webp',
+                    '.jpg': 'image/jpeg',
+                    '.jpeg': 'image/jpeg',
                     '.ico': 'image/x-icon'
                 };
                 const contentType = mimeTypes[ext] || 'application/octet-stream';
